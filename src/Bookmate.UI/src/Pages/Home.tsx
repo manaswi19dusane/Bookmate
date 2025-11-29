@@ -4,7 +4,7 @@ import "../css/Home.css";
 
 export default function Home() {
   return (
-    <div className="home">
+    <div className="home2">
       {books.map((b) => (
         <BookCard key={b.id} book={b} />
       ))}

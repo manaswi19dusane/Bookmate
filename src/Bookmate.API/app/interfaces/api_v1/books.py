@@ -6,12 +6,10 @@ from app.infrastructure.repositories.book_repo import BookRepository
 from app.application.usecases.create_book import CreateBookUseCase
 from app.application.usecases.list_books import ListBooksUseCase
 from sqlmodel.ext.asyncio.session import AsyncSession
-from contextlib import asynccontextmanager
 from app.domain.exceptions import BookNotFound
 
 router = APIRouter(tags=["books"])
 
-@asynccontextmanager
 async def get_session():
     async with async_session() as session:
         yield session
@@ -36,6 +34,7 @@ async def get_book(book_id: str, session: AsyncSession = Depends(get_session)):
         domain_book = await repo.get_by_id(book_id)
     except BookNotFound:
         raise HTTPException(status_code=404, detail="Book not found")
+
     return {
         "id": domain_book.id.value,
         "title": domain_book.title,

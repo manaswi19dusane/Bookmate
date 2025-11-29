@@ -1,69 +1,44 @@
-from typing import List, Optional
-from sqlmodel import SQLModel, Field, select
+from typing import List
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.infrastructure.repositories.interfaces import BookRepositoryProtocol
-from app.domain.models import Book as DomainBook, BookId
-from datetime import date
-
-class BookORM(SQLModel, table=True):
-    id: str = Field(primary_key=True)
-    title: str
-    author: str
-    published_date: Optional[date] = None
-    image_url: Optional[str] = None
-    purchased_date: Optional[date] = None
+from app.domain.models import Book as DomainBook
+from app.domain.exceptions import BookNotFound
+from app.infrastructure.Mappers.book_mapper import BookMapper
+from app.infrastructure.Mappers.book_orm import BookORM
 
 class BookRepository(BookRepositoryProtocol):
     def __init__(self, session: AsyncSession):
         self.session = session
 
     async def add(self, book: DomainBook) -> None:
-        orm = BookORM(
-            id=book.id.value,
-            title=book.title,
-            author=book.author,
-            published_date=book.published_date,
-            image_url=book.image_url,
-            purchased_date=book.purchased_date
-        )
+        orm = BookMapper.to_orm(book)
         self.session.add(orm)
         await self.session.commit()
+        await self.session.refresh(orm)
 
     async def get_by_id(self, id: str) -> DomainBook:
-        q = select(BookORM).where(BookORM.id == id)
-        result = await self.session.execute(q)
+        stmt = select(BookORM).where(BookORM.id == id)
+        result = await self.session.execute(stmt)
         orm = result.scalars().first()
-        if not orm:
-            from app.domain.exceptions import BookNotFound
+
+        if orm is None:
             raise BookNotFound(id)
-        return DomainBook(
-            id=BookId(orm.id),
-            title=orm.title,
-            author=orm.author,
-            published_date=orm.published_date,
-            image_url=orm.image_url,
-            purchased_date=orm.purchased_date
-        )
+
+        return BookMapper.to_domain_from_orm(orm)
 
     async def list_all(self) -> List[DomainBook]:
-        q = select(BookORM)
-        result = await self.session.execute(q)
+        stmt = select(BookORM)
+        result = await self.session.execute(stmt)
         orm_list = result.scalars().all()
-        return [
-            DomainBook(
-                id=BookId(o.id),
-                title=o.title,
-                author=o.author,
-                published_date=o.published_date,
-                image_url=o.image_url,
-                purchased_date=o.purchased_date
-            ) for o in orm_list
-        ]
+
+        return [BookMapper.to_domain_from_orm(o) for o in orm_list]
 
     async def remove(self, id: str) -> None:
-        q = select(BookORM).where(BookORM.id == id)
-        result = await self.session.execute(q)
+        stmt = select(BookORM).where(BookORM.id == id)
+        result = await self.session.execute(stmt)
         orm = result.scalars().first()
+
         if orm:
             await self.session.delete(orm)
             await self.session.commit()

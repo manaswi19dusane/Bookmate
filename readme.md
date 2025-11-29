@@ -75,6 +75,42 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ### 4️⃣ Verify API is Running
 👉 http://127.0.0.1:8000/docs
 
+### Curl for apis - copy this curl and use it in postman
+
+#### Insert Book
+```
+curl --location 'http://127.0.0.1:8000/api/books' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data '
+  {
+    
+    "title": "Test Book",
+    "author": "OneSolve",
+    "published_date": "2025-11-29",
+    "image_url": "http://",
+    "purchased_date": "2025-11-29"
+  }
+'
+```
+#### Get All books
+```
+curl --location --request GET 'http://127.0.0.1:8000/api/books' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data '
+'
+```
+
+#### GetBy ID
+```
+curl --location --request GET 'http://127.0.0.1:8000/api/books/61f696fc-85f6-431b-9ff8-3e5c2782b74b' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data '
+  
+'
+```
 ---
 
 # 💻 Running the Frontend (React + Vite)

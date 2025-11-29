@@ -1,0 +1,55 @@
+.card {
+    background: #ffffffcc;
+    backdrop-filter: blur(10px);
+    padding: 22px;
+    border-radius: 18px;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transition: 0.25s ease;
+}
+
+.card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.author {
+    margin-top: 6px;
+    color: #666;
+}
+
+.status {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.owned {
+    background: #d4ffd4;
+    color: #0c7d0c;
+}
+
+.wishlist {
+    background: #e4d4ff;
+    color: #6a2adf;
+}
+
+.btn {
+    margin-top: 16px;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #6a5acd, #7b68ee);
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}

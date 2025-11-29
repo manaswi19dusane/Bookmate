@@ -90,7 +90,13 @@ Bookmate\src\Bookmate.UI
 ```bash
 npm install
 ```
+```bash
+npm install react-router-dom
+npm install -D @types/react-router-dom
 
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
 ---
 
 ### 2️⃣ Run Development Server

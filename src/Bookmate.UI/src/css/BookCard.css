@@ -1,55 +1,93 @@
+
 .card {
-    background: #ffffffcc;
-    backdrop-filter: blur(10px);
     padding: 22px;
-    border-radius: 18px;
-    border: 1px solid #eee;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    transition: 0.25s ease;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: 0.3s ease, transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+    cursor: pointer;
 }
 
 .card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-6px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
-.author {
-    margin-top: 6px;
+
+.book-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.book-author {
+    font-size: 0.95rem;
     color: #666;
+    margin-bottom: 15px;
 }
 
-.status {
+.book-status {
     display: inline-block;
-    margin-top: 10px;
     padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.owned {
-    background: #d4ffd4;
-    color: #0c7d0c;
-}
-
-.wishlist {
-    background: #e4d4ff;
-    color: #6a2adf;
-}
-
-.btn {
-    margin-top: 16px;
-    width: 100%;
-    padding: 10px 14px;
-    border: none;
     border-radius: 12px;
-    background: linear-gradient(45deg, #6a5acd, #7b68ee);
-    color: white;
-    font-size: 15px;
-    cursor: pointer;
-    transition: 0.2s;
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+    transition: background 0.3s, color 0.3s;
 }
 
-.btn:hover {
-    opacity: 0.9;
+
+.book-status.owned {
+    background-color: #4caf50;
+    color: rgb(113, 175, 201);
+}
+
+.book-status.wishlist {
+    background-color: #ff9800;
+    color: #e98e8e;
+}
+
+
+.book-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s;
+    cursor: pointer;
+    background-color: hsl(185, 54%, 61%);
+    color: white;
+}
+
+.book-btn:hover {
+    opacity: 0.85;
+}
+
+
+.dark .card {
+    background: rgba(30, 30, 30, 0.65);
+    backdrop-filter: blur(8px);
+    color: white;
+    box-shadow: 0 8px 20px rgba(0, 255, 255, 0.12);
+}
+
+.dark .card:hover {
+    box-shadow: 0 20px 35px rgba(0, 255, 255, 0.25);
+}
+
+.dark .book-status.owned {
+    background-color: #00ff7f;
+    color: black;
+}
+
+.dark .book-status.wishlist {
+    background-color: #ffa500;
+    color: black;
+}
+
+.dark .book-btn {
+    background-color: #4adbe0;
+    color: white;
 }

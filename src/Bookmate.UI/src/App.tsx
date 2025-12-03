@@ -3,15 +3,58 @@ import Navbar from "./Componants/Navbar";
 import Home from "./Pages/Home";
 import AddBook from "./Pages/AddBook";
 import Wishlist from "./Pages/Wishlist";
+import Welcome from "./Pages/frontpage";  // ⬅️ NEW
 
 function App() {
   return (
     <Router>
-      <Navbar />
+
+      {/* Show Navbar only AFTER selecting language */}
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/add" element={<AddBook />} />
-        <Route path="/wishlist" element={<Wishlist />} />
+        {/* WELCOME PAGE FIRST (no navbar here) */}
+        <Route path="/" element={<Welcome />} />
+
+        {/* AFTER selecting language, show navbar + books */}
+        <Route
+          path="/books/english"
+          element={
+            <>
+              <Navbar />
+              <Home language="english" />
+            </>
+          }
+        />
+
+        <Route
+          path="/books/marathi"
+          element={
+            <>
+              <Navbar />
+              <Home language="marathi" />
+            </>
+          }
+        />
+
+        {/* Other existing pages also need Navbar */}
+        <Route
+          path="/add"
+          element={
+            <>
+              <Navbar />
+              <AddBook />
+            </>
+          }
+        />
+
+        <Route
+          path="/wishlist"
+          element={
+            <>
+              <Navbar />
+              <Wishlist />
+            </>
+          }
+        />
       </Routes>
     </Router>
   );

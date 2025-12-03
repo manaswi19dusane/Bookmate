@@ -3,13 +3,27 @@ import BookCard from "../Componants/BookCard";
 import { books } from "../Data/books";
 import "../css/Home.css";
 
-export default function Home() {
+
+
+interface HomeProps {
+  language: string;
+}
+
+interface HomeProps {
+  language: string;
+}
+
+export default function Home({ language }: HomeProps) 
+ {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filter books based on search term
-  const filteredBooks = books.filter((b) =>
+  const filteredBooks = books.filter(
+  (b) =>
+    b.language.toLowerCase() === language.toLowerCase() &&
     b.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+);
+
 
   return (
     <div>

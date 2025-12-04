@@ -8,6 +8,7 @@ class BookDTOMapper:
         return BookDTO(
             id=domain.id.value,
             title=domain.title,
+            language=domain.language,
             author=domain.author,
             published_date=domain.published_date,
             image_url=domain.image_url,

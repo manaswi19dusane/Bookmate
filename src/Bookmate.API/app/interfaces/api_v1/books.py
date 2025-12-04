@@ -39,6 +39,7 @@ async def get_book(book_id: str, session: AsyncSession = Depends(get_session)):
         "id": domain_book.id.value,
         "title": domain_book.title,
         "author": domain_book.author,
+        "language": domain_book.language,
         "published_date": domain_book.published_date,
         "image_url": domain_book.image_url,
         "purchased_date": domain_book.purchased_date

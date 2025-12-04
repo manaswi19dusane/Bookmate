@@ -1,7 +1,10 @@
 export interface Book {
-  id: number;
+  id: string;
   title: string;
   author: string;
-  status: "Owned" | "Wishlist"; // STRICT type
   language: string;
+  published_date?: string | null;
+  purchased_date?: string | null;
+  image_url?: string | null;
+  // status: "Owned" | "Wishlist";
 }

@@ -11,6 +11,7 @@ class BookMapper:
             id=BookId.new(),
             title=dto.title,
             author=dto.author,
+            language = dto.language,
             published_date=dto.published_date,
             image_url=dto.image_url,
             purchased_date=dto.purchased_date
@@ -23,6 +24,7 @@ class BookMapper:
             id=book.id.value,
             title=book.title,
             author=book.author,
+            language = book.language,
             published_date=book.published_date,
             image_url=book.image_url,
             purchased_date=book.purchased_date
@@ -35,6 +37,7 @@ class BookMapper:
             id=book.id.value,
             title=book.title,
             author=book.author,
+            language = book.language,
             published_date=book.published_date,
             image_url=book.image_url,
             purchased_date=book.purchased_date
@@ -47,6 +50,7 @@ class BookMapper:
             id=BookId(orm.id),
             title=orm.title,
             author=orm.author,
+            language = orm.language,
             published_date=orm.published_date,
             image_url=orm.image_url,
             purchased_date=orm.purchased_date
@@ -58,6 +62,7 @@ class BookMapper:
             id=BookId(orm.id),
             title=orm.title,
             author=orm.author,
+            language = orm.language,
             published_date=orm.published_date,
             image_url=orm.image_url,
             purchased_date=orm.purchased_date

@@ -87,6 +87,7 @@ curl --location 'http://127.0.0.1:8000/api/books' \
     
     "title": "Test Book",
     "author": "OneSolve",
+    "language": "english",
     "published_date": "2025-11-29",
     "image_url": "http://",
     "purchased_date": "2025-11-29"

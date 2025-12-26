@@ -1,0 +1,40 @@
+.welcome-container {
+  text-align: center;
+  margin-top: 80px;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: bold;
+  color: #2d2d2d;
+}
+
+.subtitle {
+  font-size: 20px;
+  margin-top: 10px;
+  color: #555;
+}
+
+.btn-group {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.lang-btn {
+  width: 260px;
+  padding: 15px;
+  border: none;
+  background-color: #5b6dff;
+  color: white;
+  font-size: 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.lang-btn:hover {
+  background-color: #4453e8;
+}

@@ -1,13 +1,12 @@
 from typing import List
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from app.infrastructure.repositories.interfaces import BookRepositoryProtocol
 from app.domain.models import Book as DomainBook
 from app.domain.exceptions import BookNotFound
 from app.infrastructure.Mappers.book_mapper import BookMapper
 from app.infrastructure.Mappers.book_orm import BookORM
-
+from sqlalchemy import update
 
 class BookRepository(BookRepositoryProtocol):
     def __init__(self, session: AsyncSession):
@@ -39,31 +38,35 @@ class BookRepository(BookRepositoryProtocol):
 
         return [BookMapper.to_domain_from_orm(o) for o in orm_list]
 
-    # ✅ UPDATE (NEW)
-    async def update(self, id: str, book: DomainBook) -> None:
-        stmt = select(BookORM).where(BookORM.id == id)
-        result = await self.session.execute(stmt)
-        orm = result.scalars().first()
+async def update(self, id: str, book: DomainBook) -> None:
+    stmt = (
+        update(BookORM)
+        .where(BookORM.id == str(id))
+        .values(
+            title=book.title,
+            author=book.author,
+            language=book.language,
+            published_date=book.published_date,
+            image_url=book.image_url,
+            purchased_date=book.purchased_date,
+        )
+    )
 
-        if orm is None:
-            raise BookNotFound(id)
+    result = await self.session.execute(stmt)
 
-        # update fields
-        orm.title = book.title
-        orm.author = book.author
-        orm.description = book.description
+    if result.rowcount == 0:
+        raise BookNotFound(id)
 
-        await self.session.commit()
-        await self.session.refresh(orm)
+    await self.session.commit()
 
-    # DELETE (Improved)
-    async def remove(self, id: str) -> None:
-        stmt = select(BookORM).where(BookORM.id == id)
-        result = await self.session.execute(stmt)
-        orm = result.scalars().first()
 
-        if orm is None:
-            raise BookNotFound(id)
+async def remove(self, id: str) -> None:
+    stmt = select(BookORM).where(BookORM.id == id)
+    result = await self.session.execute(stmt)
+    orm = result.scalars().first()
 
-        await self.session.delete(orm)
-        await self.session.commit()
+    if orm is None:
+        raise BookNotFound(id)
+
+    await self.session.delete(orm)
+    await self.session.commit()

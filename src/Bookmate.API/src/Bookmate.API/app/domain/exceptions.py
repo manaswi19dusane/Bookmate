@@ -1,2 +1,0 @@
-class BookNotFound(Exception):
-    pass

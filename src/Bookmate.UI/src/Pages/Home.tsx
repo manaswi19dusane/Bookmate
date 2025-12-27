@@ -3,6 +3,7 @@ import BookCard from "../Componants/BookCard";
 import { fetchBooks } from "../Api/Books"; 
 import type { BookResponse } from "../Api/Books";
 import "../css/Home.css";
+import { Book } from "../Types/Book";
 
 interface HomeProps {
   language: string;
@@ -49,7 +50,11 @@ export default function Home({ language }: HomeProps) {
       ) : (
         <div className="home">
           {filteredBooks.length > 0 ? (
-            filteredBooks.map((b) => <BookCard key={b.id} book={b} />)
+            filteredBooks.map((b) => <BookCard key={b.id} book={b} onDelete={function (id: string): void {
+              throw new Error("Function not implemented.");
+            } } onUpdate={function (book: Book): void {
+              throw new Error("Function not implemented.");
+            } } />)
           ) : (
             <p>No books found</p>
           )}

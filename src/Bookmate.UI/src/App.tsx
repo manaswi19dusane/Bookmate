@@ -16,8 +16,9 @@ export interface User {
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" />;
+  // const token = localStorage.getItem("token");
+  // return token ? children : <Navigate to="/login" />;
+  return children;
 };
 
 // Wrapper component to use useNavigate inside App

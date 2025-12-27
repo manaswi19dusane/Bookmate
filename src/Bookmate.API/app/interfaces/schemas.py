@@ -18,3 +18,12 @@ class BookResponse(BaseModel):
     published_date: Optional[date] = None
     image_url: Optional[str] = None
     purchased_date: Optional[date] = None
+
+class UpdateBookRequest(BaseModel):
+    title: Optional[str] = None
+    author: Optional[str] = None
+    language: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    published_date: Optional[date] = None
+    purchased_date: Optional[date] = None

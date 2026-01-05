@@ -130,3 +130,12 @@
     font-size: 14px;
     text-decoration: none;
 }
+.home {
+  padding: 10px;
+}
+
+@media (min-width: 768px) {
+  .home {
+    padding: 20px 40px;
+  }
+}

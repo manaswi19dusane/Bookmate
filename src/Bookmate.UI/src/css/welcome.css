@@ -27,7 +27,7 @@
   width: 260px;
   padding: 15px;
   border: none;
-  background-color: hsl(20, 97%, 55%);
+  background-color: hsl(187, 69%, 54%);
   color: white;
   font-size: 18px;
   border-radius: 12px;
@@ -36,7 +36,7 @@
 }
 
 .lang-btn:hover {
-  background-color: #f2812b;
+  background-color: #6deaea;
 }
 /* Full screen background */
 .welcome-page {
@@ -54,7 +54,7 @@
 
 /* Center white card */
 .welcome-container {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(235, 235, 235, 0.92);
   padding: 40px 32px;
   border-radius: 18px;
   text-align: center;
@@ -88,10 +88,10 @@
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  background: #6366f1;
+  background: hsl(190, 80%, 62%);
   color: white;
 }
 
 .lang-btn:hover {
-  background: #4f46e5;
+  background: #46cde5;
 }

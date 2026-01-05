@@ -68,19 +68,20 @@ export default function AddBook() {
           onChange={(e) => setLanguage(e.target.value)}
         />
 
-        <input
-          type="date"
-          placeholder="Published Date"
-          value={publishedDate}
-          onChange={(e) => setPublishedDate(e.target.value)}
-        />
-
-        <input
-          type="date"
-          placeholder="Purchased Date"
-          value={purchasedDate}
-          onChange={(e) => setPurchasedDate(e.target.value)}
-        />
+        {/* Published Date */}
+      <label className="date-label">Published Date</label>
+      <input
+        type="date"
+        value={publishedDate}
+        onChange={(e) => setPublishedDate(e.target.value)}
+      />
+         {/* Published Date */}
+      <label className="date-label">Purchased Date</label>
+      <input
+        type="date"
+        value={purchasedDate}
+        onChange={(e) => setPurchasedDate(e.target.value)}
+      />
 
         <input
           placeholder="Image URL"

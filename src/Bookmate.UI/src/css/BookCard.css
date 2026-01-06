@@ -91,3 +91,28 @@
     background-color: #4adbe0;
     color: white;
 }
+.book-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 10px;
+}
+
+.book-card {
+  width: 100%;   /* Mobile */
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .book-card {
+    width: 45%;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .book-card {
+    width: 90%;
+  }
+}
+

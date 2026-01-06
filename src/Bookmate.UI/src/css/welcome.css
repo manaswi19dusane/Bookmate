@@ -27,7 +27,7 @@
   width: 260px;
   padding: 15px;
   border: none;
-  background-color: #5b6dff;
+  background-color: hsl(187, 69%, 54%);
   color: white;
   font-size: 18px;
   border-radius: 12px;
@@ -36,5 +36,62 @@
 }
 
 .lang-btn:hover {
-  background-color: #4453e8;
+  background-color: #6deaea;
+}
+/* Full screen background */
+.welcome-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-image: url("../assets/WELCOME.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Center white card */
+.welcome-container {
+  background: rgba(235, 235, 235, 0.92);
+  padding: 40px 32px;
+  border-radius: 18px;
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+}
+
+/* Text */
+.title {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+/* Buttons */
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lang-btn {
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: hsl(190, 80%, 62%);
+  color: white;
+}
+
+.lang-btn:hover {
+  background: #46cde5;
 }

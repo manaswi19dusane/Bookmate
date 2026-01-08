@@ -126,7 +126,6 @@ Bookmate\src\Bookmate.UI
 ### 1️⃣ Install Node Modules
 ```bash
 npm install
-npm install react-icons
 
 ```
 ```bash

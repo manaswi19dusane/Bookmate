@@ -1,42 +1,48 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../css/Navbar.css";
-import { FaBell, FaUserCircle } from "react-icons/fa"; // bell & profile icons
+import { FaBell, FaUserCircle, FaSearch } from "react-icons/fa";
 import logo from "../assets/Images/LOGO.png";
 
 export default function Navbar() {
   const [showProfile, setShowProfile] = useState(false);
 
   return (
-    <nav className="nav">
-      {/* LEFT: Logo */}
-      <div className="nav-logo">
+    <nav className="navbar">
+      
+      {/* LEFT SECTION */}
+      <div className="nav-left">
         <img src={logo} alt="Bookmate Logo" className="logo-img" />
-        <span className="logo-text">Bookmate</span>
+        <span className="brand">Bookmate</span>
       </div>
 
-      {/* CENTER: Search */}
-      <div className="nav-search">
-        <input type="text" placeholder="Search your books..." />
+      {/* CENTER SECTION */}
+       
+      <div className="nav-center"> 
+        <input
+          className="search-input"
+          type="text"
+          placeholder="Search books..."
+        />
       </div>
 
-      {/* RIGHT: Links + Icons */}
-      <div className="nav-links">
+      {/* RIGHT SECTION */}
+      <div className="nav-right">
         <Link to="/wishlist">Wishlist</Link>
 
-        {/* Bell Icon */}
-        <FaBell className="icon" />
+        <FaBell className="nav-icon" />
 
-        {/* Profile Icon */}
-        <div className="profile-wrapper" onClick={() => setShowProfile(!showProfile)}>
-          <FaUserCircle className="icon" />
+        <div
+          className="profile-wrapper"
+          onClick={() => setShowProfile(!showProfile)}
+        >
+          <FaUserCircle className="nav-icon" />
 
-          {/* Dropdown after clicking profile */}
           {showProfile && (
             <div className="profile-dropdown">
-              <p>My Account</p>
-              <p>Settings</p>
-              <p>Logout</p>
+              <Link to="/account">My Account</Link>
+              <Link to="/settings">Settings</Link>
+              <Link to="/login">Logout</Link>
             </div>
           )}
         </div>

@@ -1,0 +1,44 @@
+.sidebar {
+  width: 220px;
+  background: #f8fafc;
+  border-right: 1px solid #e2e8f0;
+  padding: 20px 0;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  margin-bottom: 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: #334155;
+  text-decoration: none;
+  font-size: 14px;
+  border-radius: 8px;
+  margin: 0 10px;
+  transition: background 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background: #e0f2fe;
+}
+
+.sidebar-link svg {
+  font-size: 16px;
+}
+
+/* ACTIVE STATE (matches image highlight) */
+.sidebar-link.active {
+  background: #dbeafe;
+  color: #2563eb;
+  font-weight: 600;
+}

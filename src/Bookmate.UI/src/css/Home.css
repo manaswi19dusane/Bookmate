@@ -133,18 +133,39 @@
 /* 🔵 HERO BANNER */
 .hero-banner {
   background: linear-gradient(90deg, #2563eb, #38bdf8);
-  border-radius: 14px;
-  padding: 30px 40px;
+  border-radius: 16px;
+  padding: 32px 50px;   /* increased right padding */
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: white;
 }
 
+
 .hero-left h2 {
   font-size: 26px;
+  font-weight: 600;
   margin-bottom: 15px;
 }
+
+.hero-right::before {
+  content: "";
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 160px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  filter: blur(30px);
+  z-index: 0;
+}
+
+.hero-image {
+  position: relative;
+  z-index: 1;
+}
+
 
 .add-book-btn {
   background: #3b82f6;
@@ -154,15 +175,29 @@
   border-radius: 6px;
   cursor: pointer;
 }
+.add-book-btn:hover {
+  background: #86793f;
+}
 
-.hero-right img {
-  height: 140px;
+.hero-right {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* IMAGE FIX */
+.hero-image {
+  height: 190px;                 /* Bigger like mockup */
+  object-fit: contain;
+  background: transparent;       /* remove white box */
+  margin-bottom: -10px;          /* slight overflow */
 }
 
 /* ⚪ FILTER BAR */
 .filter-bar {
   background: white;
-  margin-top: -25px;
+  margin-top: -10px;
   padding: 15px 25px;
   border-radius: 12px;
   display: flex;
@@ -191,6 +226,7 @@
 .book-grid {
   margin-top: 25px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
 }
+

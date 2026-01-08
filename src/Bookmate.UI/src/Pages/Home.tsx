@@ -3,6 +3,7 @@ import BookCard from "../Componants/BookCard";
 import { fetchBooks } from "../Api/Books";
 import type { BookResponse } from "../Api/Books";
 import "../css/Home.css";
+import bannerImage from "../assets/Images/BannerImage.png";
 
 interface HomeProps {
   language: string;
@@ -48,13 +49,15 @@ return (
     <div className="hero-banner">
       <div className="hero-left">
         <h2>Manage Your Books Smartly</h2>
-        <button className="add-book-btn">Add New Book</button>
+        <p>Track, organize and discover books easily</p>
+        <button className="add-book-btn">+ Add New Book</button>
       </div>
 
       <div className="hero-right">
         <img
-          src="/banner-girl.png"
+          src={bannerImage}
           alt="Reading"
+          className="hero-image"
         />
       </div>
     </div>

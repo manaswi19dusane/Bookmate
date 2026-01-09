@@ -44,55 +44,86 @@ export default function AddBook() {
   }
 
   return (
-    <div className="add-container">
-      <form className="add-form" onSubmit={handleSubmit}>
-        <h2>Add New Book</h2>
-
-        <input
-          placeholder="Book Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-
-        <input
-          placeholder="Author Name"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          required
-        />
-
-        <input
-          placeholder="Language"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-        />
-
-        {/* Published Date */}
-      <label className="date-label">Published Date</label>
-      <input
-        type="date"
-        value={publishedDate}
-        onChange={(e) => setPublishedDate(e.target.value)}
-      />
-         {/* Published Date */}
-      <label className="date-label">Purchased Date</label>
-      <input
-        type="date"
-        value={purchasedDate}
-        onChange={(e) => setPurchasedDate(e.target.value)}
-      />
-
-        <input
-          placeholder="Image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-        />
-
-        <button disabled={loading}>
-          {loading ? "Saving..." : "Add Book"}
-        </button>
-      </form>
+  <div className="add-page">
+    {/* Header */}
+    <div className="add-header">
+      <h2>📘 Add New Book</h2>
     </div>
-  );
+
+    <form className="add-card" onSubmit={handleSubmit}>
+      <div className="form-grid">
+
+        {/* LEFT: Upload box */}
+        <div className="upload-box">
+          <div className="upload-inner">
+            <span className="plus">+</span>
+            <p>Upload book cover</p>
+            <small>Click to upload</small>
+            <input type="file" hidden />
+          </div>
+
+          <button
+            type="button"
+            className="camera-btn"
+          >
+            📸 Take Picture
+          </button>
+        </div>
+
+        {/* RIGHT: Form */}
+        <div className="form-fields">
+          <label>Book Title</label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter the full name of the book"
+            required
+          />
+
+          <label>Author</label>
+          <input
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            required
+          />
+
+          <div className="row">
+            <div>
+              <label>Language</label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+              >
+                <option>English</option>
+                <option>Marathi</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Status</label>
+              <select>
+                <option>Owned</option>
+                <option>Wishlist</option>
+              </select>
+            </div>
+          </div>
+
+          <label>Description</label>
+          <textarea rows={4} placeholder="Add a short description..." />
+        </div>
+      </div>
+
+      {/* ACTIONS */}
+      <div className="actions">
+        <button type="button" className="cancel">
+          Cancel
+        </button>
+
+        <button className="save" disabled={loading}>
+          {loading ? "Saving..." : "💾 Save Book"}
+        </button>
+      </div>
+    </form>
+  </div>
+);
 }

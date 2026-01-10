@@ -42,73 +42,67 @@ export default function Home({ language }: HomeProps) {
     console.log("Update clicked");
   };
 
-return (
-  <div className="home-page">
+  return (
+    <div className="home-page">
 
-    {/* 🔵 BANNER */}
-    <div className="hero-banner">
-      <div className="hero-left">
-        <h2>Manage Your Books Smartly</h2>
-        <p>Track, organize and discover books easily</p>
-        <button className="add-book-btn">+ Add New Book</button>
+      {/* 🔵 BANNER */}
+      <div className="hero-banner">
+        <div className="hero-left">
+          <h2>Manage Your Books Smartly</h2>
+          <p>Track, organize and discover books easily</p>
+          <button className="add-book-btn">+ Add New Book</button>
+        </div>
+
+        <div className="hero-right">
+          <img
+            src={bannerImage}
+            alt="Reading"
+            className="hero-image"
+          />
+        </div>
       </div>
 
-      <div className="hero-right">
-        <img
-          src={bannerImage}
-          alt="Reading"
-          className="hero-image"
-        />
-      </div>
-    </div>
-
-    {/* ⚪ FILTER BAR */}
-    <div className="filter-bar">
-      <div className="filter-item">
-        <label>Language:</label>
+      {/* ⚪ FILTER BAR */}
+      <div className="home-filters">
         <select>
+          <option>Language</option>
           <option>English</option>
           <option>Marathi</option>
         </select>
-      </div>
 
-      <div className="filter-item">
-        <label>Status:</label>
         <select>
-          <option>All</option>
-          <option>Read</option>
-          <option>Unread</option>
+          <option>Status</option>
+          <option>Owned</option>
+          <option>Wishlist</option>
         </select>
-      </div>
 
-      <div className="filter-item">
-        <label>Sort By:</label>
         <select>
+          <option>Sort By</option>
           <option>Name</option>
           <option>Date</option>
         </select>
       </div>
-    </div>
 
-    {/* 📚 BOOK GRID */}
-    {loading ? (
-      <p>Loading...</p>
-    ) : (
-      <div className="book-grid">
-        {filteredBooks.length > 0 ? (
-          filteredBooks.map((b) => (
-            <BookCard
-              key={b.id}
-              book={b}
-              onDelete={handleDelete}
-              onUpdate={handleUpdate}
-            />
-          ))
-        ) : (
-          <p>No books found</p>
-        )}
-      </div>
-    )}
-  </div>
-);
+
+      {/* 📚 BOOK GRID */}
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="book-grid">
+          {filteredBooks.length > 0 ? (
+            filteredBooks.map((b) => (
+              <BookCard
+                key={b.id}
+                book={b}
+                onDelete={handleDelete}
+                onUpdate={handleUpdate}
+              />
+            ))
+          ) : (
+            <p>No books found</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }

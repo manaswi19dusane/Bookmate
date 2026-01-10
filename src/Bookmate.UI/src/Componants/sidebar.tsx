@@ -26,12 +26,12 @@ export default function Sidebar() {
           </NavLink>
         </li>
 
-        <li>
+        {/* <li>
           <NavLink to="/filters" className="sidebar-link">
             <FaFilter />
             <span>Filters</span>
           </NavLink>
-        </li>
+        </li> */}
 
         <li>
           <NavLink to="/wishlist" className="sidebar-link">

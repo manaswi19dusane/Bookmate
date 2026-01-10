@@ -24,12 +24,12 @@ export default function Wishlist() {
     }
   }
 
-  async function moveToOwned(id: number) {
+  async function moveToOwned(id: string) {
     await updateBookStatus(id, "owned");
     loadWishlist();
   }
 
-  async function removeFromWishlist(id: number) {
+  async function removeFromWishlist(id: string) {
     await deleteBook(id);
     loadWishlist();
   }
@@ -38,28 +38,54 @@ export default function Wishlist() {
 
   return (
     <div className="wishlist-page">
-      <h2>❤️ My Wishlist</h2>
+      {/* HEADER */}
+      <div className="wishlist-header">
+        <h2>💙 My Wishlist</h2>
+      </div>
 
+      {/* FILTER BAR (UI only for now) */}
+      <div className="wishlist-filters">
+        <select>
+          <option>Sort By</option>
+          <option>Name</option>
+          <option>Date</option>
+        </select>
+
+        <select>
+          <option>Filter</option>
+          <option>English</option>
+          <option>Marathi</option>
+        </select>
+
+        <input type="text" placeholder="🔍 Filter" />
+      </div>
+
+      {/* LIST */}
       {books.length === 0 ? (
-        <p className="empty-text">
-          🤍 Your wishlist is empty. Add books you love!
-        </p>
+        <div className="wishlist-empty">
+          🤍 Your wishlist is empty! Start adding books you love.
+        </div>
       ) : (
         <div className="wishlist-list">
           {books.map((book) => (
             <div className="wishlist-card" key={book.id}>
+              {/* HEART ICON */}
+              <span className="heart">❤️</span>
+
+              {/* IMAGE */}
               <img
                 src={book.image_url || "/placeholder-book.png"}
                 alt={book.title}
               />
 
+              {/* INFO */}
               <div className="wishlist-info">
                 <h3>{book.title}</h3>
-                <p>{book.author}</p>
+                <p className="author">{book.author}</p>
 
-                <span className="language-badge">
-                  Language: {book.language}
-                </span>
+                <div className="language">
+                  Language <span>{book.language}</span>
+                </div>
 
                 <div className="wishlist-actions">
                   <button
@@ -73,7 +99,7 @@ export default function Wishlist() {
                     className="btn-remove"
                     onClick={() => removeFromWishlist(book.id)}
                   >
-                    Remove
+                    ⬆ Remove
                   </button>
                 </div>
               </div>

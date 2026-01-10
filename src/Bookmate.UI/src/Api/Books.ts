@@ -55,7 +55,7 @@ export async function fetchBook(id: string): Promise<BookResponse> {
 
 /* ✅ UPDATE STATUS */
 export async function updateBookStatus(
-  id: number,
+  id: string,
   status: "wishlist" | "owned"
 ) {
   const res = await fetch(`${BASE_URL}/${id}`, {
@@ -68,7 +68,7 @@ export async function updateBookStatus(
 }
 
 /* ✅ DELETE */
-export async function deleteBook(id: number) {
+export async function deleteBook(id: string) {
   const res = await fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",
   });

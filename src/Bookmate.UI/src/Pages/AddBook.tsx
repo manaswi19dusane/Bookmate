@@ -51,18 +51,20 @@ export default function AddBook() {
         <div className="form-grid">
           {/* LEFT: Upload box */}
           <div className="upload-box">
-            <div className="upload-inner">
+            {/* CLICKABLE UPLOAD AREA */}
+            <label className="upload-inner">
               <span className="plus">+</span>
               <p>Upload book cover</p>
               <small>Click to upload</small>
-              <input type="file" hidden />
-            </div>
+              <input type="file" className="file-input" hidden/>
+            </label>
 
+            {/* CAMERA BUTTON */}
             <button type="button" className="camera-btn">
               📸 Take Picture
             </button>
 
-            {/* KEEP EXISTING IMAGE URL FIELD (IMPORTANT) */}
+            {/* IMAGE URL */}
             <input
               className="image-url-input"
               placeholder="Or paste image URL"

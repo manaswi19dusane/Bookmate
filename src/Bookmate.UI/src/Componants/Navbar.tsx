@@ -9,7 +9,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      
+
       {/* LEFT SECTION */}
       <div className="nav-left">
         <img src={logo} alt="Bookmate Logo" className="logo-img" />
@@ -17,15 +17,16 @@ export default function Navbar() {
       </div>
 
       {/* CENTER SECTION */}
-       
-      <div className="nav-center"> 
-        <input
-          className="search-input"
-          type="text"
-          placeholder="Search books..."
-        />
+      <div className="nav-center">
+        <div className="nav-search-box">
+          <span className="nav-search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search your books..."
+            className="nav-search-input"
+          />
+        </div>
       </div>
-
       {/* RIGHT SECTION */}
       <div className="nav-right">
         <Link to="/wishlist">Wishlist</Link>

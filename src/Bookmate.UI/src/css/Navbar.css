@@ -33,13 +33,34 @@
   justify-content: center;
 }
 
-.search-input {
-  width: 400px;
-  max-width: 90%;
+.nav-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 520px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px; /* pill */
   padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.nav-search-icon {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.nav-search-input {
+  border: none;
   outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: #334155;
+  background: transparent;
+}
+
+.nav-search-input::placeholder {
+  color: #94a3b8;
 }
 
 /* RIGHT */

@@ -1,6 +1,6 @@
 .wishlist-page {
   padding: 30px;
-  background: #f5f8fc;
+  background: #c8d5e5;
   min-height: 100vh;
 }
 
@@ -32,7 +32,7 @@
 
 /* Card */
 .wishlist-card {
-  background: white;
+  background: rgb(92, 102, 102);
   border-radius: 14px;
   padding: 16px;
   display: flex;

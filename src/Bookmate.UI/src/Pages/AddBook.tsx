@@ -26,8 +26,8 @@ export default function AddBook() {
       });
 
       alert("Book added successfully!");
-      
-      
+
+
       setTitle("");
       setAuthor("");
       setLanguage("");
@@ -44,86 +44,113 @@ export default function AddBook() {
   }
 
   return (
-  <div className="add-page">
-    {/* Header */}
-    <div className="add-header">
-      <h2>📘 Add New Book</h2>
-    </div>
+    <div className="add-container">
+      <form className="add-card" onSubmit={handleSubmit}>
+        <h2 className="form-title">Add New Book</h2>
 
-    <form className="add-card" onSubmit={handleSubmit}>
-      <div className="form-grid">
+        <div className="form-grid">
+          {/* LEFT: Upload box */}
+          <div className="upload-box">
+            <div className="upload-inner">
+              <span className="plus">+</span>
+              <p>Upload book cover</p>
+              <small>Click to upload</small>
+              <input type="file" hidden />
+            </div>
 
-        {/* LEFT: Upload box */}
-        <div className="upload-box">
-          <div className="upload-inner">
-            <span className="plus">+</span>
-            <p>Upload book cover</p>
-            <small>Click to upload</small>
-            <input type="file" hidden />
+            <button type="button" className="camera-btn">
+              📸 Take Picture
+            </button>
+
+            {/* KEEP EXISTING IMAGE URL FIELD (IMPORTANT) */}
+            <input
+              className="image-url-input"
+              placeholder="Or paste image URL"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+            />
           </div>
 
-          <button
-            type="button"
-            className="camera-btn"
-          >
-            📸 Take Picture
+          {/* RIGHT: Form Fields */}
+          <div className="form-fields">
+            {/* BOOK TITLE */}
+            <label>Book Title</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter the full name of the book"
+              required
+            />
+
+            {/* AUTHOR */}
+            <label>Author</label>
+            <input
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              placeholder="Author name"
+              required
+            />
+
+            {/* LANGUAGE + STATUS */}
+            <div className="row">
+              <div>
+                <label>Language</label>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  required
+                >
+                  <option value="">Select Language</option>
+                  <option value="English">English</option>
+                  <option value="Marathi">Marathi</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Status</label>
+                <select>
+                  <option value="Owned">Owned</option>
+                  <option value="Wishlist">Wishlist</option>
+                </select>
+              </div>
+            </div>
+
+            {/* PUBLISHED DATE (KEEP) */}
+            <label>Published Date</label>
+            <input
+              type="date"
+              value={publishedDate}
+              onChange={(e) => setPublishedDate(e.target.value)}
+            />
+
+            {/* PURCHASED DATE (KEEP) */}
+            <label>Purchased Date</label>
+            <input
+              type="date"
+              value={purchasedDate}
+              onChange={(e) => setPurchasedDate(e.target.value)}
+            />
+
+            {/* DESCRIPTION (OPTIONAL / UI ONLY) */}
+            <label>Description</label>
+            <textarea
+              rows={4}
+              placeholder="Add a short description..."
+            />
+          </div>
+        </div>
+
+        {/* ACTIONS */}
+        <div className="actions">
+          <button type="button" className="cancel">
+            Cancel
+          </button>
+
+          <button type="submit" className="save" disabled={loading}>
+            {loading ? "Saving..." : "💾 Save Book"}
           </button>
         </div>
-
-        {/* RIGHT: Form */}
-        <div className="form-fields">
-          <label>Book Title</label>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter the full name of the book"
-            required
-          />
-
-          <label>Author</label>
-          <input
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            required
-          />
-
-          <div className="row">
-            <div>
-              <label>Language</label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                <option>English</option>
-                <option>Marathi</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Status</label>
-              <select>
-                <option>Owned</option>
-                <option>Wishlist</option>
-              </select>
-            </div>
-          </div>
-
-          <label>Description</label>
-          <textarea rows={4} placeholder="Add a short description..." />
-        </div>
-      </div>
-
-      {/* ACTIONS */}
-      <div className="actions">
-        <button type="button" className="cancel">
-          Cancel
-        </button>
-
-        <button className="save" disabled={loading}>
-          {loading ? "Saving..." : "💾 Save Book"}
-        </button>
-      </div>
-    </form>
-  </div>
-);
+      </form>
+    </div>
+  );
 }

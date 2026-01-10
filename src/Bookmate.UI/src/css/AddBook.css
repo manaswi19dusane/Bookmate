@@ -1,6 +1,6 @@
 .add-page {
   padding: 40px;
-  background: #f5f8fc;
+  background: #c8d5e5;
   min-height: 100vh;
 }
 
@@ -11,7 +11,7 @@
 }
 
 .add-card {
-  background: white;
+  background: rgb(92, 102, 102);
   border-radius: 16px;
   padding: 30px;
   box-shadow: 0 12px 30px rgba(0,0,0,0.08);

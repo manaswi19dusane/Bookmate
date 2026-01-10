@@ -1,18 +1,9 @@
 import { useEffect, useState } from "react";
-import "../css/Wishlist.css";
-import { getBooks, updateBookStatus, deleteBook } from "../Api/Books";
-
-type Book = {
-  id: number;
-  title: string;
-  author: string;
-  language: string;
-  image_url?: string;
-  status: "wishlist" | "owned";
-};
+import "../css/wishlist.css";
+import { fetchBooks, updateBookStatus, deleteBook, BookResponse } from "../Api/Books";
 
 export default function Wishlist() {
-  const [books, setBooks] = useState<Book[]>([]);
+  const [books, setBooks] = useState<BookResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,9 +12,9 @@ export default function Wishlist() {
 
   async function loadWishlist() {
     try {
-      const allBooks = await getBooks();
+      const allBooks = await fetchBooks();
       const wishlistBooks = allBooks.filter(
-        (book: Book) => book.status === "wishlist"
+        (book: BookResponse) => book.language === "english"
       );
       setBooks(wishlistBooks);
     } catch (err) {

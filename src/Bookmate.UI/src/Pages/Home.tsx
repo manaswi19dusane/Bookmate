@@ -4,6 +4,7 @@ import { fetchBooks } from "../Api/Books";
 import type { BookResponse } from "../Api/Books";
 import "../css/Home.css";
 import bannerImage from "../assets/Images/BannerImage.png";
+import { useNavigate } from "react-router-dom";
 
 interface HomeProps {
   language: string;
@@ -12,6 +13,7 @@ interface HomeProps {
 export default function Home({ language }: HomeProps) {
   const [books, setBooks] = useState<BookResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function load() {
@@ -50,7 +52,7 @@ export default function Home({ language }: HomeProps) {
         <div className="hero-left">
           <h2>Manage Your Books Smartly</h2>
           <p>Track, organize and discover books easily</p>
-          <button className="add-book-btn">+ Add New Book</button>
+          <button className="add-book-btn" onClick={() => navigate("/add")}>+ Add New Book</button>
         </div>
 
         <div className="hero-right">

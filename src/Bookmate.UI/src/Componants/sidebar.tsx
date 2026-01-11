@@ -8,7 +8,11 @@ import {
   FaFilter,
 } from "react-icons/fa";
 
-export default function Sidebar() {
+interface SidebarProps {
+  onOpenChat: () => void;
+}
+
+export default function Sidebar({ onOpenChat }: SidebarProps) {
   return (
     <aside className="sidebar">
       <ul className="sidebar-menu">
@@ -40,11 +44,9 @@ export default function Sidebar() {
           </NavLink>
         </li>
 
-        <li>
-          <NavLink to="/chat" className="sidebar-link">
-            <FaRobot />
-            <span>AI Chat</span>
-          </NavLink>
+        <li onClick={onOpenChat} className="sidebar-link">
+          <FaRobot />
+          <span>AI Chat</span>
         </li>
       </ul>
     </aside>

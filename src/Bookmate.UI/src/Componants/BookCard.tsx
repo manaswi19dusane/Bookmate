@@ -68,30 +68,35 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
   };
 
   return (
-    <div className="book-card">
-      {book.image_url && (
-        <img src={book.image_url} alt={book.title} className="book-image" />
-      )}
+  <div className="book-card">
 
-      <h2>{book.title}</h2>
-      <p>by {book.author}</p>
-      <p>Language: {book.language}</p>
+    {/* BOOK IMAGE */}
+    <div className="book-image-wrapper">
+      {book.image_url ? (
+        <img src={book.image_url} alt={book.title} />
+      ) : (
+        <div className="image-placeholder">No Image</div>
+      )}
+    </div>
+
+    {/* BOOK INFO */}
+    <div className="book-info">
+      <h3 className="book-title">{book.title}</h3>
+      <p className="book-author">{book.author}</p>
 
       <span className={`book-status ${status.toLowerCase()}`}>
         {status}
       </span>
+    </div>
 
-      <button className="book-btn" onClick={toggleWishlist}>
-        {status === "Owned" ? "Move to Wishlist" : "Mark as Owned"}
-      </button>
-
-      <button className="book-btn update-btn" onClick={updateBook}>
-        Update
-      </button>
-
-      <button className="book-btn delete-btn" onClick={deleteBook}>
-        Delete
+    {/* ACTIONS */}
+    <div className="book-actions">
+      <button className="icon-btn" onClick={updateBook}>✏️</button>
+      <button className="icon-btn delete" onClick={deleteBook}>🗑</button>
+      <button className="icon-btn" onClick={toggleWishlist}>
+        {status === "Owned" ? "❤️" : "🤍"}
       </button>
     </div>
-  );
+  </div>
+);
 }

@@ -1,118 +1,119 @@
-
-.card {
-    padding: 22px;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    transition: 0.3s ease, transform 0.3s, box-shadow 0.3s;
-    text-align: center;
-    cursor: pointer;
+/* ================================
+   BOOK CARD CONTAINER
+================================ */
+.book-card {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
 }
 
-.card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+.book-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15);
 }
 
+/* ================================
+   BOOK IMAGE
+================================ */
+.book-image-wrapper {
+  height: 220px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.book-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+/* ================================
+   BOOK INFO SECTION
+================================ */
+.book-info {
+  padding: 12px 14px;
+  flex: 1;
+}
 
 .book-title {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 4px;
+  line-height: 1.2;
 }
 
 .book-author {
-    font-size: 0.95rem;
-    color: #666;
-    margin-bottom: 15px;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 10px;
 }
 
+/* ================================
+   STATUS BADGE
+================================ */
 .book-status {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    margin-bottom: 12px;
-    transition: background 0.3s, color 0.3s;
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  font-weight: 600;
 }
-
 
 .book-status.owned {
-    background-color: #4caf50;
-    color: rgb(113, 175, 201);
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .book-status.wishlist {
-    background-color: #ff9800;
-    color: #e98e8e;
+  background: #ffedd5;
+  color: #c2410c;
 }
 
-
-.book-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: all 0.3s;
-    cursor: pointer;
-    background-color: hsl(185, 54%, 61%);
-    color: white;
-}
-
-.book-btn:hover {
-    opacity: 0.85;
-}
-
-
-.dark .card {
-    background: rgba(30, 30, 30, 0.65);
-    backdrop-filter: blur(8px);
-    color: white;
-    box-shadow: 0 8px 20px rgba(0, 255, 255, 0.12);
-}
-
-.dark .card:hover {
-    box-shadow: 0 20px 35px rgba(0, 255, 255, 0.25);
-}
-
-.dark .book-status.owned {
-    background-color: #00ff7f;
-    color: black;
-}
-
-.dark .book-status.wishlist {
-    background-color: #ffa500;
-    color: black;
-}
-
-.dark .book-btn {
-    background-color: #4adbe0;
-    color: white;
-}
-.book-container {
+/* ================================
+   ACTION BUTTONS
+================================ */
+.book-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 10px;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-top: 1px solid #e2e8f0;
 }
 
-.book-card {
-  width: 100%;   /* Mobile */
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
-/* Tablet */
-@media (min-width: 768px) {
-  .book-card {
-    width: 45%;
+.icon-btn:hover {
+  transform: scale(1.15);
+}
+
+.icon-btn.delete:hover {
+  color: #dc2626;
+}
+
+/* ================================
+   RESPONSIVE TOUCH IMPROVEMENT
+================================ */
+@media (hover: none) {
+  .book-card:hover {
+    transform: none;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   }
 }
-
-/* Desktop */
-@media (min-width: 1024px) {
-  .book-card {
-    width: 90%;
-  }
-}
-

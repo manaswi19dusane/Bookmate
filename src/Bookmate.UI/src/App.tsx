@@ -1,12 +1,11 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import Navbar from "./Componants/Navbar";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import Home from "./Pages/Home";
 import AddBook from "./Pages/AddBook";
 import Wishlist from "./Pages/Wishlist";
-import Welcome from "./Pages/frontpage";
 import Login from "./Componants/login";
 import Signup from "./Componants/signup";
+import Layout from "./Componants/layout";
 
 // Define User type
 export interface User {
@@ -14,79 +13,68 @@ export interface User {
   id: string;
 }
 
-// PrivateRoute component to protect routes
+// PrivateRoute
 const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
-  // const token = localStorage.getItem("token");
-  // return token ? children : <Navigate to="/login" />;
   return children;
 };
 
-// Wrapper component to use useNavigate inside App
 const AppWrapper: React.FC = () => {
   const navigate = useNavigate();
 
-  // setUser now expects a User object
   const setUser = (user: User) => {
-    localStorage.setItem("token", user.id); // store user id or token
-    // Optional: store full user object
-    // localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", user.id);
   };
 
-  // Navigation functions for switching pages
   const switchToSignup = () => navigate("/signup");
   const switchToLogin = () => navigate("/login");
 
   return (
     <Routes>
-      {/* Welcome page */}
-      <Route path="/" element={<Welcome />} />
-
-      {/* Login & Signup pages */}
+      {/* Auth pages */}
       <Route path="/login" element={<Login setUser={setUser} switchToSignup={switchToSignup} />} />
       <Route path="/signup" element={<Signup setUser={setUser} switchToLogin={switchToLogin} />} />
 
-      {/* Protected book pages */}
+      {/* App pages */}
       <Route
-        path="/books/english"
+        path="/"
         element={
           <PrivateRoute>
-            <>
-              <Navbar />
+            <Layout>
               <Home language="english" />
-            </>
+            </Layout>
           </PrivateRoute>
         }
       />
+
       <Route
         path="/books/marathi"
         element={
           <PrivateRoute>
-            <>
-              <Navbar />
+            <Layout>
               <Home language="marathi" />
-            </>
+            </Layout>
           </PrivateRoute>
         }
       />
+
       <Route
         path="/add"
         element={
           <PrivateRoute>
-            <>
-              <Navbar />
+            <Layout>
               <AddBook />
-            </>
+            </Layout>
           </PrivateRoute>
         }
       />
+
       <Route
         path="/wishlist"
         element={
           <PrivateRoute>
-            <>
-              <Navbar />
+            <Layout>
               <Wishlist />
-            </>
+            </Layout>
           </PrivateRoute>
         }
       />
@@ -94,7 +82,6 @@ const AppWrapper: React.FC = () => {
   );
 };
 
-// App component with Router
 const App: React.FC = () => {
   return (
     <Router>

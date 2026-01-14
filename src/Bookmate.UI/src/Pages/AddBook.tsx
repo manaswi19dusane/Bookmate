@@ -26,8 +26,8 @@ export default function AddBook() {
       });
 
       alert("Book added successfully!");
-      
-      
+
+
       setTitle("");
       setAuthor("");
       setLanguage("");
@@ -45,53 +45,113 @@ export default function AddBook() {
 
   return (
     <div className="add-container">
-      <form className="add-form" onSubmit={handleSubmit}>
-        <h2>Add New Book</h2>
+      <form className="add-card" onSubmit={handleSubmit}>
+        <h2 className="form-title">Add New Book</h2>
 
-        <input
-          placeholder="Book Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+        <div className="form-grid">
+          {/* LEFT: Upload box */}
+          <div className="upload-box">
+            {/* CLICKABLE UPLOAD AREA */}
+            <label className="upload-inner">
+              <span className="plus">+</span>
+              <p>Upload book cover</p>
+              <small>Click to upload</small>
+              <input type="file" className="file-input" hidden/>
+            </label>
 
-        <input
-          placeholder="Author Name"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          required
-        />
+            {/* CAMERA BUTTON */}
+            <button type="button" className="camera-btn">
+              📸 Take Picture
+            </button>
 
-        <input
-          placeholder="Language"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-        />
+            {/* IMAGE URL */}
+            <input
+              className="image-url-input"
+              placeholder="Or paste image URL"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+            />
+          </div>
 
-        {/* Published Date */}
-      <label className="date-label">Published Date</label>
-      <input
-        type="date"
-        value={publishedDate}
-        onChange={(e) => setPublishedDate(e.target.value)}
-      />
-         {/* Published Date */}
-      <label className="date-label">Purchased Date</label>
-      <input
-        type="date"
-        value={purchasedDate}
-        onChange={(e) => setPurchasedDate(e.target.value)}
-      />
+          {/* RIGHT: Form Fields */}
+          <div className="form-fields">
+            {/* BOOK TITLE */}
+            <label>Book Title</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter the full name of the book"
+              required
+            />
 
-        <input
-          placeholder="Image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-        />
+            {/* AUTHOR */}
+            <label>Author</label>
+            <input
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              placeholder="Author name"
+              required
+            />
 
-        <button disabled={loading}>
-          {loading ? "Saving..." : "Add Book"}
-        </button>
+            {/* LANGUAGE + STATUS */}
+            <div className="row">
+              <div>
+                <label>Language</label>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  required
+                >
+                  <option value="">Select Language</option>
+                  <option value="English">English</option>
+                  <option value="Marathi">Marathi</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Status</label>
+                <select>
+                  <option value="Owned">Owned</option>
+                  <option value="Wishlist">Wishlist</option>
+                </select>
+              </div>
+            </div>
+
+            {/* PUBLISHED DATE (KEEP) */}
+            <label>Published Date</label>
+            <input
+              type="date"
+              value={publishedDate}
+              onChange={(e) => setPublishedDate(e.target.value)}
+            />
+
+            {/* PURCHASED DATE (KEEP) */}
+            <label>Purchased Date</label>
+            <input
+              type="date"
+              value={purchasedDate}
+              onChange={(e) => setPurchasedDate(e.target.value)}
+            />
+
+            {/* DESCRIPTION (OPTIONAL / UI ONLY) */}
+            <label>Description</label>
+            <textarea
+              rows={4}
+              placeholder="Add a short description..."
+            />
+          </div>
+        </div>
+
+        {/* ACTIONS */}
+        <div className="actions">
+          <button type="button" className="cancel">
+            Cancel
+          </button>
+
+          <button type="submit" className="save" disabled={loading}>
+            {loading ? "Saving..." : "💾 Save Book"}
+          </button>
+        </div>
       </form>
     </div>
   );

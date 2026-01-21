@@ -10,7 +10,6 @@ class UpdateBookUseCase:
 
     async def execute(self, book_id: str, dto: UpdateBookDTO) -> BookDTO:
        
-        existing = await self.repo.get_by_id(book_id)
         
         updated = BookMapper.from_update_dto(book_id, dto)
 

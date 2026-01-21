@@ -1,4 +1,7 @@
 const BASE_URL = "http://127.0.0.1:8000/api/books";
+
+/* ---------- TYPES ---------- */
+
 export interface BookResponse {
   id: string;
   title: string;
@@ -17,13 +20,13 @@ export interface CreateBookRequest {
   image_url?: string | null;
   purchased_date?: string | null;
 }
-/* ✅ CREATE */
+
+/* ---------- CREATE ---------- */
 export async function createBook(
   payload: CreateBookRequest
 ): Promise<BookResponse> {
   const res = await fetch(BASE_URL, {
     method: "POST",
-
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
@@ -35,14 +38,18 @@ export async function createBook(
   return await res.json();
 }
 
-/* ✅ READ */
-export async function fetchBooks(): Promise<BookResponse[]>  {
+/* ---------- READ ALL ---------- */
+export async function fetchBooks(): Promise<BookResponse[]> {
   const res = await fetch(BASE_URL);
-  if (!res.ok) throw new Error("Failed to fetch books");
-  return res.json();
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch books");
+  }
+
+  return await res.json();
 }
 
-// Get book by id
+/* ---------- READ BY ID ---------- */
 export async function fetchBook(id: string): Promise<BookResponse> {
   const res = await fetch(`${BASE_URL}/${id}`);
 
@@ -53,7 +60,7 @@ export async function fetchBook(id: string): Promise<BookResponse> {
   return await res.json();
 }
 
-/* ✅ UPDATE STATUS */
+/* ---------- UPDATE STATUS ---------- */
 export async function updateBookStatus(
   id: string,
   status: "wishlist" | "owned"
@@ -64,14 +71,18 @@ export async function updateBookStatus(
     body: JSON.stringify({ status }),
   });
 
-  if (!res.ok) throw new Error("Failed to update book status");
+  if (!res.ok) {
+    throw new Error("Failed to update book status");
+  }
 }
 
-/* ✅ DELETE */
+/* ---------- DELETE ---------- */
 export async function deleteBook(id: string) {
   const res = await fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",
   });
 
-  if (!res.ok) throw new Error("Failed to delete book");
+  if (!res.ok) {
+    throw new Error("Failed to delete book");
+  }
 }

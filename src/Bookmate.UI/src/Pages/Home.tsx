@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import BookCard from "../Componants/BookCard";
-import { fetchBooks } from "../Api/Books";
+import { fetchBooks, deleteBook } from "../Api/Books";
+
 import type { BookResponse } from "../Api/Books";
 import "../css/Home.css";
 import bannerImage from "../assets/Images/BannerImage.png";
@@ -35,9 +36,15 @@ export default function Home({ language }: HomeProps) {
   );
 
   // 🗑 Delete handler
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+  try {
+    await deleteBook(id); // ✅ NOW USED
     setBooks((prev) => prev.filter((b) => b.id !== id));
-  };
+  } catch (err) {
+    console.error("Failed to delete book", err);
+  }
+};
+
 
   // ✏ Update handler (placeholder)
   const handleUpdate = () => {

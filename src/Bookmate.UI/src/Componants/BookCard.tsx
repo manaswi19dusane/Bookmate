@@ -33,70 +33,41 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
         method: "DELETE",
       });
 
-      onDelete(book.id); 
+      onDelete(book.id);
     } catch (error) {
       console.error("Delete failed", error);
     }
   };
 
-  const updateBook = async () => {
-    const newTitle = window.prompt("Enter new title", book.title);
-    if (!newTitle) return;
-
-    const newAuthor = window.prompt("Enter new author", book.author);
-    if (!newAuthor) return;
-
-    const updatedBook: Book = {
-      ...book,
-      title: newTitle,
-      author: newAuthor,
-    };
-
-    try {
-      await fetch(`http://localhost:8000/books/${book.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedBook),
-      });
-
-      onUpdate(updatedBook);
-    } catch (error) {
-      console.error("Update failed", error);
-    }
-  };
-
   return (
-  <div className="book-card">
+    <div className="book-card">
+      {/* BOOK IMAGE */}
+      <div className="book-image-wrapper">
+        {book.image_url ? (
+          <img src={book.image_url} alt={book.title} />
+        ) : (
+          <div className="image-placeholder">No Image</div>
+        )}
+      </div>
 
-    {/* BOOK IMAGE */}
-    <div className="book-image-wrapper">
-      {book.image_url ? (
-        <img src={book.image_url} alt={book.title} />
-      ) : (
-        <div className="image-placeholder">No Image</div>
-      )}
+      {/* BOOK INFO */}
+      <div className="book-info">
+        <h3 className="book-title">{book.title}</h3>
+        <p className="book-author">{book.author}</p>
+
+        <span className={`book-status ${status.toLowerCase()}`}>
+          {status}
+        </span>
+      </div>
+
+      {/* ACTIONS */}
+      <div className="book-actions">
+        <button className="icon-btn" onClick={() => onUpdate(book)}>✏️</button>
+        <button className="icon-btn delete" onClick={deleteBook}>🗑</button>
+        <button className="icon-btn" onClick={toggleWishlist}>
+          {status === "Owned" ? "❤️" : "🤍"}
+        </button>
+      </div>
     </div>
-
-    {/* BOOK INFO */}
-    <div className="book-info">
-      <h3 className="book-title">{book.title}</h3>
-      <p className="book-author">{book.author}</p>
-
-      <span className={`book-status ${status.toLowerCase()}`}>
-        {status}
-      </span>
-    </div>
-
-    {/* ACTIONS */}
-    <div className="book-actions">
-      <button className="icon-btn" onClick={updateBook}>✏️</button>
-      <button className="icon-btn delete" onClick={deleteBook}>🗑</button>
-      <button className="icon-btn" onClick={toggleWishlist}>
-        {status === "Owned" ? "❤️" : "🤍"}
-      </button>
-    </div>
-  </div>
-);
+  );
 }

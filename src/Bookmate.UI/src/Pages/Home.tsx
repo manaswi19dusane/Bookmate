@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import UpdateBook from "../Componants/updatebook";
 import BookCard from "../Componants/BookCard";
 import { fetchBooks, deleteBook } from "../Api/Books";
 import type { BookResponse } from "../Api/Books";
@@ -7,6 +8,10 @@ import bannerImage from "../assets/Images/BannerImage.png";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const [sortBy, setSortBy] = useState(""); // new state for sorting
+
+  const [selectedBook, setSelectedBook] = useState<BookResponse | null>(null);
+  const [showDrawer, setShowDrawer] = useState(false);
   const [books, setBooks] = useState<BookResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState("All");
@@ -43,16 +48,17 @@ export default function Home() {
   /* ---------- DELETE ---------- */
   const handleDelete = async (id: string) => {
     try {
-      await deleteBook(id); // backend delete
-      setBooks((prev) => prev.filter((b) => b.id !== id)); // UI update
+      await deleteBook(id);
+      setBooks((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
       console.error("Failed to delete book", err);
     }
   };
 
-  /* ---------- UPDATE (PLACEHOLDER) ---------- */
-  const handleUpdate = () => {
-    console.log("Update clicked");
+  /* ---------- UPDATE ---------- */
+  const handleUpdate = (book: BookResponse) => {
+    setSelectedBook(book);
+    setShowDrawer(true);
   };
 
   return (
@@ -73,48 +79,59 @@ export default function Home() {
       </div>
 
       {/* ⚪ FILTER BAR */}
-      <div className="home-filters">
-        <select
-          value={selectedLanguage}
-          onChange={(e) => setSelectedLanguage(e.target.value)}
-        >
-          <option value="All">All</option>
-          <option value="English">English</option>
-          <option value="Marathi">Marathi</option>
-        </select>
+      {/* ⚪ FILTER BAR */}
+<div className="home-filters">
+  {/* Language Select */}
+  <select
+    value={selectedLanguage}
+    onChange={(e) => setSelectedLanguage(e.target.value)}
+  >
+    <option value="All">Language</option>
+    <option value="English">English</option>
+    <option value="Marathi">Marathi</option>
+  </select>
 
-        <select>
-          <option>Status</option>
-          <option>Owned</option>
-          <option>Wishlist</option>
-        </select>
+  {/* Sort By Select */}
+  <select
+    value={sortBy}
+    onChange={(e) => setSortBy(e.target.value)}
+  >
+    <option value="" disabled>
+      Sort By
+    </option>
+    <option value="name">Name</option>
+    <option value="date">Date</option>
+  </select>
+</div>
 
-        <select>
-          <option>Sort By</option>
-          <option>Name</option>
-          <option>Date</option>
-        </select>
-      </div>
 
       {/* 📚 BOOK GRID */}
       {loading ? (
         <p>Loading...</p>
       ) : (
         <div className="book-grid">
-          {filteredBooks.length > 0 ? (
-            filteredBooks.map((b) => (
-              <BookCard
-                key={b.id}
-                book={b}
-                onDelete={handleDelete}
-                onUpdate={handleUpdate}
-              />
-            ))
-          ) : (
-            <p>No books found</p>
-          )}
+          {filteredBooks.map((b) => (
+            <BookCard
+              key={b.id}
+              book={b}
+              onDelete={handleDelete}
+              onUpdate={handleUpdate}
+            />
+          ))}
         </div>
+      )}
+
+      {/* 🧩 UPDATE DRAWER */}
+      {showDrawer && selectedBook && (
+        <UpdateBook
+          book={selectedBook}
+          onClose={() => setShowDrawer(false)}
+          onUpdated={loadBooks}
+        />
       )}
     </div>
   );
 }
+<option value="All" disabled>
+  Language
+</option>

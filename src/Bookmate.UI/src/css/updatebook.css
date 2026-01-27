@@ -1,0 +1,79 @@
+/* overlay */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1000;
+}
+
+/* drawer */
+.drawer {
+  width: 420px;
+  height: 100vh;                 /* 🔑 full height */
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.15);
+}
+
+/* header */
+.drawer-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.drawer-header h3 {
+  margin: 0;
+}
+
+/* body (scroll here) */
+.drawer-body {
+  flex: 1;                       /* 🔑 takes remaining space */
+  padding: 16px;
+  overflow-y: auto;              /* 🔑 scroll inside drawer */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.drawer-body input,
+.drawer-body select {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* footer */
+.drawer-footer {
+  padding: 16px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-btn {
+  padding: 8px 14px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-btn {
+  padding: 8px 14px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}

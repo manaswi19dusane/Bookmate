@@ -14,6 +14,8 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
     return saved === "Owned" || saved === "Wishlist" ? saved : "Wishlist";
   });
 
+  const [showConfirm, setShowConfirm] = useState(false);
+
   useEffect(() => {
     localStorage.setItem(`book_${book.id}_status`, status);
   }, [book.id, status]);
@@ -23,17 +25,12 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
   };
 
   const deleteBook = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this book?"
-    );
-    if (!confirmDelete) return;
-
     try {
       await fetch(`http://localhost:8000/books/${book.id}`, {
         method: "DELETE",
       });
-
       onDelete(book.id);
+      setShowConfirm(false);
     } catch (error) {
       console.error("Delete failed", error);
     }
@@ -54,7 +51,6 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
       <div className="book-info">
         <h3 className="book-title">{book.title}</h3>
         <p className="book-author">{book.author}</p>
-
         <span className={`book-status ${status.toLowerCase()}`}>
           {status}
         </span>
@@ -63,11 +59,24 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
       {/* ACTIONS */}
       <div className="book-actions">
         <button className="icon-btn" onClick={() => onUpdate(book)}>✏️</button>
-        <button className="icon-btn delete" onClick={deleteBook}>🗑</button>
+        <button className="icon-btn delete" onClick={() => setShowConfirm(true)}>🗑</button>
         <button className="icon-btn" onClick={toggleWishlist}>
           {status === "Owned" ? "❤️" : "🤍"}
         </button>
       </div>
+
+      {/* CUSTOM DELETE CONFIRMATION MODAL */}
+      {showConfirm && (
+        <div className="confirm-modal">
+          <div className="modal-content">
+            <p>Are you sure you want to delete <strong>{book.title}</strong>?</p>
+            <div className="modal-buttons">
+              <button className="yes-btn" onClick={deleteBook}>Yes</button>
+              <button className="no-btn" onClick={() => setShowConfirm(false)}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

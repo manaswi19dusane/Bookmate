@@ -1,6 +1,8 @@
 import type { Book } from "../Types/Book";
 import "../css/BookCard.css";
 import { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+
 
 interface Props {
   book: Book;
@@ -66,17 +68,31 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
       </div>
 
       {/* CUSTOM DELETE CONFIRMATION MODAL */}
-      {showConfirm && (
-        <div className="confirm-modal">
-          <div className="modal-content">
-            <p>Are you sure you want to delete <strong>{book.title}</strong>?</p>
-            <div className="modal-buttons">
-              <button className="yes-btn" onClick={deleteBook}>Yes</button>
-              <button className="no-btn" onClick={() => setShowConfirm(false)}>No</button>
-            </div>
-          </div>
+      {showConfirm &&
+  ReactDOM.createPortal(
+    <div className="confirm-modal">
+      <div className="modal-content">
+        <p>
+          Are you sure you want to delete <strong>{book.title}</strong>?
+        </p>
+
+        <div className="modal-buttons">
+          <button className="yes-btn" onClick={deleteBook}>
+            Yes
+          </button>
+
+          <button
+            className="no-btn"
+            onClick={() => setShowConfirm(false)}
+          >
+            No
+          </button>
         </div>
-      )}
+      </div>
+    </div>,
+    document.body
+  )}
+
     </div>
   );
 }

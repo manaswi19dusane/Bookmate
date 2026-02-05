@@ -1,10 +1,22 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../css/Navbar.css";
-import { FaBell, FaUserCircle, FaSearch } from "react-icons/fa";
+import { FaBell, FaUserCircle } from "react-icons/fa";
 import logo from "../assets/Images/LOGO.png";
 
-export default function Navbar() {
+/*
+  👉 Props coming from Layout.tsx
+  searchQuery = current search text
+  setSearchQuery = function to update search text
+*/
+type NavbarProps = {
+  searchQuery: string;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+};
+
+export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
+
+  // Profile dropdown toggle state
   const [showProfile, setShowProfile] = useState(false);
 
   return (
@@ -16,17 +28,26 @@ export default function Navbar() {
         <span className="brand">Bookmate</span>
       </div>
 
-      {/* CENTER SECTION */}
+      {/* CENTER SECTION (SEARCH BAR) */}
       <div className="nav-center">
         <div className="nav-search-box">
           <span className="nav-search-icon">🔍</span>
+
+          {/* 
+            👉 Controlled Input
+            value = searchQuery from Layout
+            onChange = update Layout state
+          */}
           <input
             type="text"
             placeholder="Search your books..."
             className="nav-search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
+
       {/* RIGHT SECTION */}
       <div className="nav-right">
         <Link to="/wishlist">Wishlist</Link>
@@ -39,6 +60,7 @@ export default function Navbar() {
         >
           <FaUserCircle className="nav-icon" />
 
+          {/* Dropdown */}
           {showProfile && (
             <div className="profile-dropdown">
               <Link to="/account">My Account</Link>
@@ -48,6 +70,7 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
     </nav>
   );
 }

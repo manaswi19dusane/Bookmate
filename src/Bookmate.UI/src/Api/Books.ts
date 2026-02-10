@@ -10,6 +10,8 @@ export interface BookResponse {
   published_date?: string | null;
   image_url?: string | null;
   purchased_date?: string | null;
+  status?: "Owned" | "Wishlist";   
+  description?: string;  
 }
 
 export interface CreateBookRequest {
@@ -25,64 +27,98 @@ export interface CreateBookRequest {
 export async function createBook(
   payload: CreateBookRequest
 ): Promise<BookResponse> {
-  const res = await fetch(BASE_URL, {
+  const Book_response = await fetch(BASE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    throw new Error(`Failed to create book (${res.status})`);
+  if (!Book_response.ok) {
+    throw new Error(`Failed to create book (${Book_response.status})`);
   }
 
-  return await res.json();
+  return await Book_response.json();
+
+}
+
+export async function updateBook(payload: Updatebookrequest):Promise<BookResponse>{
+    const Book_response=await fetch(`${BASE_URL}/${payload.id}`,{
+
+
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),
+    });
+    if(!Book_response.ok){
+      throw new Error(`Failed to update book (${Book_response.status})`);
+
+
+    }
+    return await Book_response.json();
+  
 }
 
 /* ---------- READ ALL ---------- */
 export async function fetchBooks(): Promise<BookResponse[]> {
-  const res = await fetch(BASE_URL);
+  const Book_response = await fetch(BASE_URL);
 
-  if (!res.ok) {
+  if (!Book_response.ok) {
     throw new Error("Failed to fetch books");
   }
 
-  return await res.json();
+  return await Book_response.json();
 }
 
 /* ---------- READ BY ID ---------- */
 export async function fetchBook(id: string): Promise<BookResponse> {
-  const res = await fetch(`${BASE_URL}/${id}`);
+  const Book_response = await fetch(`${BASE_URL}/${id}`);
 
-  if (!res.ok) {
-    throw new Error(`Book not found (${res.status})`);
+  if (!Book_response.ok) {
+    throw new Error(`Book not found (${Book_response.status})`);
   }
 
-  return await res.json();
+  return await Book_response.json();
+
 }
+
 
 /* ---------- UPDATE STATUS ---------- */
 export async function updateBookStatus(
   id: string,
   status: "wishlist" | "owned"
 ) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  const Book_response = await fetch(`${BASE_URL}/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
   });
 
-  if (!res.ok) {
+  if (!Book_response.ok) {
     throw new Error("Failed to update book status");
   }
 }
 
 /* ---------- DELETE ---------- */
 export async function deleteBook(id: string) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  const Book_response = await fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",
   });
 
-  if (!res.ok) {
+  if (!Book_response.ok) {
     throw new Error("Failed to delete book");
   }
+}
+
+/*Updatebookrequest*/
+
+export interface Updatebookrequest{
+  id:string;
+  title:string;
+  author:string;
+  language:string;
+  published_date?:string|null;
+  image_url?:string|null;
+  purchased_date?:string|null;
+  status?: "Owned" | "Wishlist";
+  description?: string;
 }

@@ -5,7 +5,7 @@ import {
   FaPlus,
   FaHeart,
   FaRobot,
-  FaFilter,
+
 } from "react-icons/fa";
 
 interface SidebarProps {

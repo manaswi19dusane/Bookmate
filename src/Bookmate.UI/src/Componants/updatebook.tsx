@@ -1,6 +1,8 @@
 import { useState } from "react";
 import "../css/updatebook.css";
 import type { BookResponse } from "../Api/Books";
+import { updateBook } from "../Api/Books";
+
 
 interface Props {
   book: BookResponse;
@@ -8,13 +10,16 @@ interface Props {
   onUpdated: () => void;
 }
 
+
 export default function UpdateBook({ book, onClose, onUpdated }: Props) {
 
   // 🔹 FORM STATE
   const [title, setTitle] = useState(book.title);
   const [author, setAuthor] = useState(book.author);
   const [language, setLanguage] = useState(book.language);
-  const [status, setStatus] = useState(book.status);
+  const [status, setStatus] =
+  useState<"Owned" | "Wishlist">(book.status || "Owned");
+
   const [publishedDate, setPublishedDate] = useState(book.published_date || "");
   const [purchasedDate, setPurchasedDate] = useState(book.purchased_date || "");
   const [description, setDescription] = useState(book.description || "");
@@ -23,27 +28,16 @@ export default function UpdateBook({ book, onClose, onUpdated }: Props) {
   // 🔹 SAVE HANDLER
   const handleSave = async () => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/books/${book.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title,
-            author,
-            language,
-            status,
-            published_date: publishedDate,
-            purchased_date: purchasedDate,
-            description,
-            image_url: imageUrl,
-          }),
-        }
-      );
+      await updateBook({
+  id: book.id,
+  title,
+  author,
+  language,
+  published_date: publishedDate || null,
+  purchased_date: purchasedDate || null,
+  image_url: imageUrl || null,
+});
 
-      if (!response.ok) {
-        throw new Error("Update failed");
-      }
 
       onUpdated(); // reload list
       onClose();   // close drawer
@@ -90,7 +84,9 @@ export default function UpdateBook({ book, onClose, onUpdated }: Props) {
 
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) =>
+  setStatus(e.target.value as "Owned" | "Wishlist")
+}
           >
             <option value="Owned">Owned</option>
             <option value="Wishlist">Wishlist</option>

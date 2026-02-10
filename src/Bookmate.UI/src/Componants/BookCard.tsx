@@ -2,6 +2,8 @@ import type { Book } from "../Types/Book";
 import "../css/BookCard.css";
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
+import { deleteBook } from "../Api/Books";
+
 
 
 interface Props {
@@ -26,17 +28,17 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
     setStatus((prev) => (prev === "Owned" ? "Wishlist" : "Owned"));
   };
 
-  const deleteBook = async () => {
+  const handleDeleteBook = async () => {
     try {
-      await fetch(`http://localhost:8000/books/${book.id}`, {
-        method: "DELETE",
-      });
+  
+      await deleteBook(book.id);
       onDelete(book.id);
       setShowConfirm(false);
     } catch (error) {
       console.error("Delete failed", error);
     }
   };
+
 
   return (
     <div className="book-card">
@@ -77,9 +79,11 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
         </p>
 
         <div className="modal-buttons">
-          <button className="yes-btn" onClick={deleteBook}>
-            Yes
+          <button className="yes-btn" onClick={handleDeleteBook}>
+          Yes
           </button>
+
+          
 
           <button
             className="no-btn"

@@ -5,6 +5,8 @@ import Wishlist from "./Pages/Wishlist";
 import Login from "./Componants/login";
 import Signup from "./Componants/signup";
 import Layout from "./Componants/layout";
+import BookDetail from "./Componants/BookDetail";
+
 
 // Define User type
 export interface User {
@@ -34,11 +36,14 @@ const AppWrapper = () => {
         path="/login"
         element={<Login setUser={setUser} switchToSignup={switchToSignup} />}
       />
+      <Route path="/book/:id" element={<BookDetail />} />
+
 
       <Route
         path="/signup"
         element={<Signup setUser={setUser} switchToLogin={switchToLogin} />}
       />
+      
 
       {/* App pages */}
       <Route

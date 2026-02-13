@@ -3,6 +3,7 @@ import "../css/BookCard.css";
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { deleteBook } from "../Api/Books";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -13,8 +14,11 @@ interface Props {
 }
 
 export default function BookCard({ book, onDelete, onUpdate }: Props) {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<"Owned" | "Wishlist">(() => {
     const saved = localStorage.getItem(`book_${book.id}_status`);
+    
+
     return saved === "Owned" || saved === "Wishlist" ? saved : "Wishlist";
   });
 
@@ -41,7 +45,8 @@ export default function BookCard({ book, onDelete, onUpdate }: Props) {
 
 
   return (
-    <div className="book-card">
+   <div className="book-card" onClick={() => navigate("/book/" + book.id)}>
+
       {/* BOOK IMAGE */}
       <div className="book-image-wrapper">
         {book.image_url ? (

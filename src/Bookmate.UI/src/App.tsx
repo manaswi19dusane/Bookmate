@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import Home from "./Pages/Home";
 import AddBook from "./Pages/AddBook";
@@ -6,6 +5,8 @@ import Wishlist from "./Pages/Wishlist";
 import Login from "./Componants/login";
 import Signup from "./Componants/signup";
 import Layout from "./Componants/layout";
+import BookDetail from "./Componants/BookDetail";
+
 
 // Define User type
 export interface User {
@@ -18,7 +19,7 @@ const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
   return children;
 };
 
-const AppWrapper: React.FC = () => {
+const AppWrapper = () => {
   const navigate = useNavigate();
 
   const setUser = (user: User) => {
@@ -31,8 +32,18 @@ const AppWrapper: React.FC = () => {
   return (
     <Routes>
       {/* Auth pages */}
-      <Route path="/login" element={<Login setUser={setUser} switchToSignup={switchToSignup} />} />
-      <Route path="/signup" element={<Signup setUser={setUser} switchToLogin={switchToLogin} />} />
+      <Route
+        path="/login"
+        element={<Login setUser={setUser} switchToSignup={switchToSignup} />}
+      />
+      <Route path="/book/:id" element={<BookDetail />} />
+
+
+      <Route
+        path="/signup"
+        element={<Signup setUser={setUser} switchToLogin={switchToLogin} />}
+      />
+      
 
       {/* App pages */}
       <Route
@@ -40,7 +51,7 @@ const AppWrapper: React.FC = () => {
         element={
           <PrivateRoute>
             <Layout>
-              <Home language="english" />
+              <Home />
             </Layout>
           </PrivateRoute>
         }
@@ -51,7 +62,7 @@ const AppWrapper: React.FC = () => {
         element={
           <PrivateRoute>
             <Layout>
-              <Home language="marathi" />
+              <Home />
             </Layout>
           </PrivateRoute>
         }
@@ -82,7 +93,7 @@ const AppWrapper: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <Router>
       <AppWrapper />

@@ -75,18 +75,7 @@ async def patch_book(
     except BookNotFound:
         raise HTTPException(status_code=404, detail="Book not found")
     
-# @router.delete("/books/{book_id}", status_code=204)
-# async def delete_book(
-#     book_id: str,
-#     session: AsyncSession = Depends(get_session),
-# ):
-#     repo = BookRepository(session)
-#     usecase = DeleteBookUseCase(repo)
 
-#     try:
-#         await usecase.execute(book_id)
-#     except BookNotFound:
-#         raise HTTPException(status_code=404, detail="Book not found")
 @router.delete("/books/{book_id}", status_code=204)
 async def delete_book(
     book_id: str,
@@ -97,4 +86,16 @@ async def delete_book(
     try:
         await repo.remove(book_id)
     except BookNotFound:
-        raise HTTPException(status_code=404, detail="Book not found")    
+        raise HTTPException(status_code=404, detail="Book not found")
+
+@router.post("/books/bulk", response_model=List[BookResponse], status_code=201)
+async def create_books(payload: List[CreateBookRequest], session: AsyncSession = Depends(get_session)):
+    repo = BookRepository(session)
+    usecase = CreateBookUseCase(repo)
+
+    results = []
+    for book in payload:
+        dto = await usecase.execute(book)
+        results.append(dto)
+
+    return results       

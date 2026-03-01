@@ -7,14 +7,21 @@ import "../css/Home.css";
 import bannerImage from "../assets/Images/BannerImage.png";
 import { useNavigate } from "react-router-dom";
 
-export default function Home() {
-  const [sortBy, setSortBy] = useState(""); // new state for sorting
+/* Props coming from Layout */
+interface HomeProps {
+  searchQuery?: string;
+}
+
+
+export default function Home({ searchQuery }: HomeProps) {
+  const [books, setBooks] = useState<BookResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [selectedBook, setSelectedBook] = useState<BookResponse | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
-  const [books, setBooks] = useState<BookResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+
   const [selectedLanguage, setSelectedLanguage] = useState("All");
+  const [sortBy, setSortBy] = useState("");
 
   const navigate = useNavigate();
 
@@ -35,15 +42,21 @@ export default function Home() {
     loadBooks();
   }, []);
 
-  /* ---------- FILTER ---------- */
-  const filteredBooks =
-    selectedLanguage === "All"
-      ? books
-      : books.filter(
-          (b) =>
-            b.language &&
-            b.language.toLowerCase() === selectedLanguage.toLowerCase()
-        );
+  /* ---------- FILTER BOOKS ---------- */
+  const query = searchQuery?.toLowerCase() || "";
+
+const filteredBooks = books.filter((b) => {
+  const matchesLanguage =
+    selectedLanguage === "All" ||
+    b.language?.toLowerCase() === selectedLanguage.toLowerCase();
+
+  const matchesSearch =
+    b.title?.toLowerCase().includes(query) ||
+    b.author?.toLowerCase().includes(query);
+
+  return matchesLanguage && matchesSearch;
+});
+
 
   /* ---------- DELETE ---------- */
   const handleDelete = async (id: string) => {
@@ -79,31 +92,24 @@ export default function Home() {
       </div>
 
       {/* ⚪ FILTER BAR */}
-      {/* ⚪ FILTER BAR */}
-<div className="home-filters">
-  {/* Language Select */}
-  <select
-    value={selectedLanguage}
-    onChange={(e) => setSelectedLanguage(e.target.value)}
-  >
-    <option value="All">Language</option>
-    <option value="English">English</option>
-    <option value="Marathi">Marathi</option>
-  </select>
+      <div className="home-filters">
+        <select
+          value={selectedLanguage}
+          onChange={(e) => setSelectedLanguage(e.target.value)}
+        >
+          <option value="All">Language</option>
+          <option value="English">English</option>
+          <option value="Marathi">Marathi</option>
+        </select>
 
-  {/* Sort By Select */}
-  <select
-    value={sortBy}
-    onChange={(e) => setSortBy(e.target.value)}
-  >
-    <option value="" disabled>
-      Sort By
-    </option>
-    <option value="name">Name</option>
-    <option value="date">Date</option>
-  </select>
-</div>
-
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="" disabled>
+            Sort By
+          </option>
+          <option value="name">Name</option>
+          <option value="date">Date</option>
+        </select>
+      </div>
 
       {/* 📚 BOOK GRID */}
       {loading ? (
@@ -132,6 +138,3 @@ export default function Home() {
     </div>
   );
 }
-<option value="All" disabled>
-  Language
-</option>

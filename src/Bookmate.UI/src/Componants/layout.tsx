@@ -45,7 +45,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       {/* 🔵 CHATBOT */}
       {chatOpen && (
-        <Chatbot onClose={() => setChatOpen(false)} />
+      {/*<Chatbot onClose={() => setChatOpen(false)} />*/}
+       <Chatbot onClose={() => setChatOpen(false)} />
       )}
     </>
   );

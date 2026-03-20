@@ -13,7 +13,6 @@ type ChildProps = {
 
 // Layout Component
 const Layout = ({ children }: { children: React.ReactNode }) => {
-
   // 🔹 State for chatbot open/close
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -30,11 +29,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       {/* 🔵 MAIN LAYOUT */}
       <div className="layout">
-
         <Sidebar onOpenChat={() => setChatOpen(true)} />
 
         <div className="main-content">
-
           {/* ✅ SAFE CLONE ELEMENT */}
           {children &&
             cloneElement(children as ReactElement<ChildProps>, {
@@ -45,8 +42,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       {/* 🔵 CHATBOT */}
       {chatOpen && (
-      {/*<Chatbot onClose={() => setChatOpen(false)} />*/}
-       <Chatbot onClose={() => setChatOpen(false)} />
+        <Chatbot onClose={() => setChatOpen(false)} />
       )}
     </>
   );

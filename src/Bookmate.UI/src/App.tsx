@@ -1,51 +1,46 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import type { ReactNode } from "react";
 import Home from "./Pages/Home";
 import AddBook from "./Pages/AddBook";
 import Wishlist from "./Pages/Wishlist";
-import Login from "./Componants/login";
-import Signup from "./Componants/signup";
 import Layout from "./Componants/layout";
 import BookDetail from "./Componants/BookDetail";
+import Login from "./Pages/Login";
+import Register from "./Pages/Register";
+import Preferences from "./Pages/Preferences";
+import Interactions from "./Pages/Interactions";
+import { User } from "./Api/auth";
 
-
-// Define User type
-export interface User {
-  email: string;
-  id: string;
-}
-
-// PrivateRoute
-const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
-  return children;
+const PrivateRoute = ({ children }: { children: ReactNode }) => {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
 };
 
 const AppWrapper = () => {
   const navigate = useNavigate();
 
-  const setUser = (user: User) => {
-    localStorage.setItem("token", user.id);
+  const setUser = (token: string, user: User) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
   };
-
-  const switchToSignup = () => navigate("/signup");
-  const switchToLogin = () => navigate("/login");
 
   return (
     <Routes>
-      {/* Auth pages */}
-      <Route
-        path="/login"
-        element={<Login setUser={setUser} switchToSignup={switchToSignup} />}
-      />
-      <Route path="/book/:id" element={<BookDetail />} />
-
+      <Route path="/login" element={<Login onAuthSuccess={setUser} />} />
+      <Route path="/register" element={<Register onAuthSuccess={setUser} />} />
+      <Route path="/signup" element={<Register onAuthSuccess={setUser} />} />
 
       <Route
-        path="/signup"
-        element={<Signup setUser={setUser} switchToLogin={switchToLogin} />}
+        path="/book/:id"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <BookDetail />
+            </Layout>
+          </PrivateRoute>
+        }
       />
-      
 
-      {/* App pages */}
       <Route
         path="/"
         element={
@@ -58,11 +53,22 @@ const AppWrapper = () => {
       />
 
       <Route
-        path="/books/marathi"
+        path="/preferences"
         element={
           <PrivateRoute>
             <Layout>
-              <Home />
+              <Preferences />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/interactions"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Interactions />
             </Layout>
           </PrivateRoute>
         }
@@ -89,6 +95,8 @@ const AppWrapper = () => {
           </PrivateRoute>
         }
       />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

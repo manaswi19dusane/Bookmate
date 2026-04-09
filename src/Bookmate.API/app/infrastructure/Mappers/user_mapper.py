@@ -36,6 +36,7 @@ class UserMapper:
             genre=preference.genre,
             author=preference.author,
             created_at=preference.created_at,
+            book_id=preference.book_id,
         )
 
     @staticmethod
@@ -46,6 +47,7 @@ class UserMapper:
             genre=orm.genre,
             author=orm.author,
             created_at=orm.created_at,
+            book_id=orm.book_id,
         )
 
     @staticmethod

@@ -87,6 +87,7 @@ async def create_preference(
             user_id=current_user.id.value,
             genre=payload.genre,
             author=payload.author,
+            book_id=payload.book_id,
             created_at=datetime.utcnow(),
         )
         await repo.add_preference(preference)
@@ -94,6 +95,7 @@ async def create_preference(
             "id": preference.id.value,
             "genre": preference.genre,
             "author": preference.author,
+            "book_id": preference.book_id,
             "created_at": preference.created_at,
         }
     except Exception as e:
@@ -120,6 +122,32 @@ async def list_interactions(
             "created_at": interaction.created_at,
         }
         for interaction in interactions
+    ]
+
+
+@router.get("/books/available", response_model=List[dict])
+async def list_available_books(
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    repo = UserRepository(session)
+    # Get books that the user hasn't interacted with yet
+    stmt = select(BookORM).where(~BookORM.id.in_(
+        select(UserInteractionORM.book_id).where(UserInteractionORM.user_id == current_user.id.value)
+    ))
+    result = await session.execute(stmt)
+    books = result.scalars().all()
+    return [
+        {
+            "id": book.id,
+            "title": book.title,
+            "author": book.author,
+            "language": book.language,
+            "published_date": book.published_date,
+            "image_url": book.image_url,
+            "purchased_date": book.purchased_date,
+        }
+        for book in books
     ]
 
 

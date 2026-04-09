@@ -18,10 +18,11 @@ export interface AuthRequest {
 }
 
 export interface UserPreference {
-  id: string;
-  genre: string;
-  author: string;
-  created_at: string;
+    id: string;
+    genre: string;
+    author: string;
+    book_id?: string;
+    created_at: string;
 }
 
 export interface UserInteraction {
@@ -79,7 +80,7 @@ export async function fetchPreferences(): Promise<UserPreference[]> {
 }
 
 export async function createPreference(
-  payload: Omit<UserPreference, "id" | "created_at">
+  payload: Partial<Omit<UserPreference, "id" | "created_at">>
 ): Promise<UserPreference> {
   const response = await fetch(`${BASE_URL}/users/preferences`, {
     method: "POST",
@@ -106,4 +107,12 @@ export async function createInteraction(
     body: JSON.stringify(payload),
   });
   return handleResponse<UserInteraction>(response);
+}
+
+export async function fetchAvailableBooks(): Promise<any[]> {
+  const response = await fetch(`${BASE_URL}/books/available`, {
+    method: "GET",
+    headers: authHeaders(false),
+  });
+  return handleResponse<any[]>(response);
 }

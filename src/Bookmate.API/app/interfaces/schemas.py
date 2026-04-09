@@ -54,12 +54,14 @@ class AuthResponse(BaseModel):
 class UserPreferenceRequest(BaseModel):
     genre: str
     author: str
+    book_id: Optional[str] = None
 
 
 class UserPreferenceResponse(BaseModel):
     id: str
     genre: str
     author: str
+    book_id: Optional[str] = None
     created_at: datetime
 
 

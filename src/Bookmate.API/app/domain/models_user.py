@@ -37,6 +37,7 @@ class UserPreference:
     genre: str
     author: str
     created_at: datetime
+    book_id: Optional[str] = None
 
 
 @dataclass(frozen=True)

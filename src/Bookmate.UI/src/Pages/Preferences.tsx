@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPreference, fetchPreferences, UserPreference } from "../Api/auth";
+import "../css/preferences.css";
 
 export default function Preferences() {
   const [preferences, setPreferences] = useState<UserPreference[]>([]);

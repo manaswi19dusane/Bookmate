@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createInteraction, fetchInteractions, UserInteraction } from "../Api/auth";
+import "../css/interactions.css";
 
 export default function Interactions() {
   const [interactions, setInteractions] = useState<UserInteraction[]>([]);

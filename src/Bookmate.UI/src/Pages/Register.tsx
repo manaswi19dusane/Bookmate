@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { registerUser, User } from "../Api/auth";
+import "../css/auth.css";
 
 interface Props {
   onAuthSuccess: (token: string, user: User) => void;
@@ -47,6 +48,10 @@ export default function Register({ onAuthSuccess }: Props) {
         />
         <button type="submit">Register</button>
         {error && <p className="error-text">{error}</p>}
+        
+        <div className="auth-link">
+          Already have an account? <Link to="/login">Login here</Link>
+        </div>
       </form>
     </div>
   );

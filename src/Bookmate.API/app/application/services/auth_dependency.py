@@ -9,7 +9,12 @@ from app.infrastructure.repositories.user_repo import UserRepository
 from app.domain.exceptions import UserNotFound
 from app.domain.models_user import User
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/login")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/users/login",
+    scheme_name="Bearer",
+    description="JWT Bearer token authentication. Use /api/users/login to get token.",
+    auto_error=False
+)
 
 
 async def get_session():

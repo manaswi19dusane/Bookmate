@@ -1,0 +1,130 @@
+/* =========================
+    INTERACTIONS PAGE
+    ========================= */
+.interactions-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.interactions-header {
+  background: linear-gradient(90deg, #2563eb, #38bdf8);
+  border-radius: 16px;
+  padding: 32px 40px;
+  color: white;
+}
+
+.interactions-header h2 {
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.interaction-form {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  flex-wrap: wrap;
+  margin-top: -20px;
+}
+
+.interaction-form input,
+.interaction-form select {
+  padding: 10px 14px;
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.interaction-form input:focus,
+.interaction-form select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.interaction-form input:first-child {
+  flex: 1;
+  min-width: 150px;
+}
+
+.interaction-form button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.interaction-form button:hover {
+  background: #2563eb;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 14px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+
+.interactions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.interaction-item {
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-left: 4px solid #2563eb;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.interaction-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.interaction-item strong {
+  font-size: 16px;
+  color: #1e293b;
+  text-transform: capitalize;
+}
+
+.interaction-item span {
+  color: #475569;
+  font-size: 14px;
+}
+
+.interaction-item small {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* =========================
+   MOBILE RESPONSIVE
+   ========================= */
+@media (max-width: 768px) {
+  .interaction-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .interactions-header {
+    padding: 24px;
+  }
+}

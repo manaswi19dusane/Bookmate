@@ -18,7 +18,7 @@ from app.infrastructure.repositories.user_repo import UserRepository
 from app.application.services.auth_service import AuthService
 from app.application.services.auth_dependency import get_current_user
 from app.domain.exceptions import UserAlreadyExists, UserNotFound
-from app.domain.models_user import User, UserPreference, UserInteraction
+from app.domain.models_user import User, UserPreference, UserPreferenceId, UserInteraction
 
 
 router = APIRouter(prefix="/api", tags=["users"])
@@ -80,21 +80,28 @@ async def create_preference(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    repo = UserRepository(session)
-    preference = UserPreference(
-        id=UserPreference.new(),
-        user_id=current_user.id.value,
-        genre=payload.genre,
-        author=payload.author,
-        created_at=datetime.utcnow(),
-    )
-    await repo.add_preference(preference)
-    return {
-        "id": preference.id.value,
-        "genre": preference.genre,
-        "author": preference.author,
-        "created_at": preference.created_at,
-    }
+    try:
+        repo = UserRepository(session)
+        preference = UserPreference(
+            id=UserPreferenceId.new(),
+            user_id=current_user.id.value,
+            genre=payload.genre,
+            author=payload.author,
+            created_at=datetime.utcnow(),
+        )
+        await repo.add_preference(preference)
+        return {
+            "id": preference.id.value,
+            "genre": preference.genre,
+            "author": preference.author,
+            "created_at": preference.created_at,
+        }
+    except Exception as e:
+        print(f"Error creating preference: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create preference"
+        )
 
 
 @router.get("/interactions", response_model=List[UserInteractionResponse])

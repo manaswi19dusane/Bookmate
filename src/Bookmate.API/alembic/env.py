@@ -18,6 +18,7 @@ fileConfig(config.config_file_name)
 # import your models' MetaData object for 'autogenerate' support
 from app.infrastructure.db import engine
 from app.infrastructure.repositories.book_repo import BookORM
+from app.infrastructure.Mappers.user_orm import UserPreferenceORM, UserInteractionORM
 from sqlmodel import SQLModel
 
 target_metadata = SQLModel.metadata

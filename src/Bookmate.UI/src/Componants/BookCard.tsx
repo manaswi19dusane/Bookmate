@@ -1,113 +1,42 @@
-import type { Book } from "../Types/Book";
-import "../css/BookCard.css";
-import { useState, useEffect } from "react";
-import ReactDOM from "react-dom";
-import { deleteBook } from "../Api/Books";
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import type { Book } from "../services/api";
+import "../css/BookCard.css";
 
+type BookCardProps = {
+  book: Book;
+  badge?: string;
+  secondaryText?: string;
+  actions?: ReactNode;
+};
 
-
-interface Props {
-  book?: Book;
-  bookId?: string;
-  showActions?: boolean;
-  onDelete?: (id: string) => void;  
-  onUpdate?: (book: any) => void;
-}
-
-export default function BookCard({ book, bookId, showActions = true, onDelete, onUpdate }: Props) {
-  const bookData = book || { 
-    id: bookId || '', 
-    title: 'Loading...', 
-    author: '' 
-  };
+export default function BookCard({ book, badge, secondaryText, actions }: BookCardProps) {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"Owned" | "Wishlist">(() => {
-    const saved = localStorage.getItem(`book_${bookData.id}_status`);
-    return saved === "Owned" || saved === "Wishlist" ? saved : "Wishlist";
-  });
-
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem(`book_${bookData.id}_status`, status);
-  }, [bookData.id, status]);
-
-  const toggleWishlist = () => {
-    setStatus((prev) => (prev === "Owned" ? "Wishlist" : "Owned"));
-  };
-
-  const handleDeleteBook = async () => {
-    try {
-      await deleteBook(bookData.id);
-      onDelete?.(bookData.id);
-      setShowConfirm(false);
-    } catch (error) {
-      console.error("Delete failed", error);
-    }
-  };
-
 
   return (
-   <div className="book-card" onClick={() => navigate("/book/" + bookData.id)}>
-
-      {/* BOOK IMAGE */}
+    <article className="book-card" onClick={() => navigate(`/book/${book.id}`)} role="button" tabIndex={0}>
       <div className="book-image-wrapper">
-        {bookData.image_url ? (
-          <img src={bookData.image_url} alt={bookData.title} />
+        {book.image_url ? (
+          <img src={book.image_url} alt={book.title} />
         ) : (
-          <div className="image-placeholder">No Image</div>
+          <div className="image-placeholder">{book.title.slice(0, 1)}</div>
         )}
       </div>
 
-      {/* BOOK INFO */}
       <div className="book-info">
-        <h3 className="book-title">{bookData.title}</h3>
-        <p className="book-author">{bookData.author}</p>
-        <span className={`book-status ${status.toLowerCase()}`}>
-          {status}
-        </span>
+        <div className="book-card-topline">
+          <p className="book-author">{book.author}</p>
+          {badge && <span className="book-status owned">{badge}</span>}
+        </div>
+        <h3 className="book-title">{book.title}</h3>
+        <p className="book-meta">{secondaryText || book.language || "Language not set"}</p>
       </div>
 
-      {/* ACTIONS */}
-      {showActions !== false && (
-        <div className="book-actions">
-          {onUpdate && book && <button className="icon-btn" onClick={(e) => { e.stopPropagation(); onUpdate(book); }}>✏️</button>}
-          {onDelete && <button className="icon-btn delete" onClick={(e) => { e.stopPropagation(); setShowConfirm(true); }}>🗑</button>}
-          <button className="icon-btn" onClick={(e) => { e.stopPropagation(); toggleWishlist(); }}>
-            {status === "Owned" ? "❤️" : "🤍"}
-          </button>
+      {actions ? (
+        <div className="book-actions" onClick={(event) => event.stopPropagation()}>
+          {actions}
         </div>
-      )}
-
-      {/* CUSTOM DELETE CONFIRMATION MODAL */}
-      {showConfirm &&
-  ReactDOM.createPortal(
-    <div className="confirm-modal">
-      <div className="modal-content">
-        <p>
-          Are you sure you want to delete <strong>{bookData.title}</strong>?
-        </p>
-
-        <div className="modal-buttons">
-          <button className="yes-btn" onClick={handleDeleteBook}>
-          Yes
-          </button>
-
-          
-
-          <button
-            className="no-btn"
-            onClick={() => setShowConfirm(false)}
-          >
-            No
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
-  )}
-
-    </div>
+      ) : null}
+    </article>
   );
 }

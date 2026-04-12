@@ -1,10 +1,15 @@
-const BASE_URL = "http://127.0.0.1:8000/api";
+const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+const API_ROOT = (viteEnv?.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
-// ==================== TYPES ====================
 export interface User {
   id: string;
   email: string;
   created_at: string;
+}
+
+export interface AuthPayload {
+  email: string;
+  password: string;
 }
 
 export interface AuthResponse {
@@ -13,17 +18,37 @@ export interface AuthResponse {
   user: User;
 }
 
-export interface AuthRequest {
-  email: string;
-  password: string;
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  language: string;
+  published_date?: string | null;
+  image_url?: string | null;
+  purchased_date?: string | null;
+}
+
+export interface BookPayload {
+  title: string;
+  author: string;
+  language: string;
+  published_date?: string | null;
+  image_url?: string | null;
+  purchased_date?: string | null;
 }
 
 export interface UserPreference {
   id: string;
   genre: string;
   author: string;
-  book_id?: string;
+  book_id?: string | null;
   created_at: string;
+}
+
+export interface UserPreferencePayload {
+  genre: string;
+  author: string;
+  book_id?: string | null;
 }
 
 export interface UserInteraction {
@@ -34,277 +59,308 @@ export interface UserInteraction {
   created_at: string;
 }
 
-export interface Book {
-  id: string;
-  title: string;
-  author: string;
-  isbn?: string;
-  description?: string;
-  published_year?: number;
-  created_at: string;
-}
-
-export interface Recommendation {
+export interface UserInteractionPayload {
   book_id: string;
-  book: Book;
-  score: number;
-  reason?: string;
+  interaction_type: string;
+  rating?: number | null;
 }
 
 export interface LibraryItem {
   id: string;
   book_id: string;
-  book: Book;
+  added_at: string;
   status: string;
-  location?: string;
-  created_at: string;
+  progress?: number | null;
+  notes?: string | null;
 }
 
 export interface Institution {
   id: string;
   name: string;
-  address?: string;
-  contact_email?: string;
+  type: string;
+  address?: string | null;
+  website?: string | null;
+  contact_email?: string | null;
   created_at: string;
+  is_verified: boolean;
+}
+
+export interface InstitutionPayload {
+  name: string;
+  type: string;
+  address?: string | null;
+  website?: string | null;
+  contact_email?: string | null;
+  is_verified?: boolean;
+}
+
+export interface CorporateClub {
+  id: string;
+  name: string;
+  organization_name: string;
+  admin_user_id: string;
+  description?: string | null;
+  max_members?: number | null;
+  created_at: string;
+  is_active: boolean;
+}
+
+export interface CorporateClubPayload {
+  name: string;
+  organization_name: string;
+  admin_user_id: string;
+  description?: string | null;
+  max_members?: number | null;
+  is_active?: boolean;
+}
+
+export interface CommunityGroup {
+  id: string;
+  name: string;
+  creator_user_id: string;
+  topic: string;
+  description?: string | null;
+  created_at: string;
+  is_public: boolean;
+}
+
+export interface CommunityGroupPayload {
+  name: string;
+  creator_user_id: string;
+  topic: string;
+  description?: string | null;
+  is_public?: boolean;
 }
 
 export interface MarketplaceItem {
   id: string;
   book_id: string;
-  book: Book;
+  seller_user_id: string;
   price: number;
   condition: string;
-  seller_id: string;
-  created_at: string;
+  description?: string | null;
+  listed_at: string;
+  is_available: boolean;
+  buyer_user_id?: string | null;
+  sold_at?: string | null;
 }
 
-// ==================== HELPERS ====================
-function authHeaders(isJson = true): Record<string, string> {
-  const token = localStorage.getItem("token");
+export interface MarketplacePayload {
+  book_id: string;
+  seller_user_id: string;
+  price: number;
+  condition: string;
+  description?: string | null;
+}
+
+function buildHeaders(token?: string | null, includeJson = true): HeadersInit {
   const headers: Record<string, string> = {};
-  
-  if (isJson) {
+  if (includeJson) {
     headers["Content-Type"] = "application/json";
   }
-  
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
-  
   return headers;
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  const data = await response.json().catch(() => ({}));
-  
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${API_ROOT}${path}`, options);
+  const contentType = response.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? await response.json()
+    : null;
+
   if (!response.ok) {
-    throw new Error(data.detail || data.message || "Request failed");
+    const detail =
+      (data && (data.detail || data.message)) ||
+      `Request failed with status ${response.status}`;
+    throw new Error(detail);
   }
-  
+
   return data as T;
 }
 
-// ==================== AUTH API ====================
 export const authApi = {
-  login: async (payload: AuthRequest): Promise<AuthResponse> => {
-    const response = await fetch(`${BASE_URL}/users/login`, {
+  login(payload: AuthPayload) {
+    return request<AuthResponse>("/api/users/login", {
       method: "POST",
-      headers: authHeaders(),
+      headers: buildHeaders(null, true),
       body: JSON.stringify(payload),
     });
-    return handleResponse<AuthResponse>(response);
   },
-
-  register: async (payload: AuthRequest): Promise<AuthResponse> => {
-    const response = await fetch(`${BASE_URL}/users/register`, {
+  register(payload: AuthPayload) {
+    return request<AuthResponse>("/api/users/register", {
       method: "POST",
-      headers: authHeaders(),
+      headers: buildHeaders(null, true),
       body: JSON.stringify(payload),
     });
-    return handleResponse<AuthResponse>(response);
   },
-
-  logout: (): void => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-  },
-
-  isAuthenticated: (): boolean => {
-    return !!localStorage.getItem("token");
-  },
-
-  getCurrentUser: (): User | null => {
-    const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
-  }
 };
 
-// ==================== PREFERENCES API ====================
-export const preferencesApi = {
-  getAll: async (): Promise<UserPreference[]> => {
-    const response = await fetch(`${BASE_URL}/users/preferences`, {
-      method: "GET",
-      headers: authHeaders(false),
-    });
-    return handleResponse<UserPreference[]>(response);
-  },
-
-  create: async (payload: Partial<Omit<UserPreference, "id" | "created_at">>): Promise<UserPreference> => {
-    const response = await fetch(`${BASE_URL}/users/preferences`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
-    return handleResponse<UserPreference>(response);
-  },
-
-  delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/users/preferences/${id}`, {
-      method: "DELETE",
-      headers: authHeaders(false),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete preference");
-    }
-  }
-};
-
-// ==================== INTERACTIONS API ====================
-export const interactionsApi = {
-  getAll: async (): Promise<UserInteraction[]> => {
-    const response = await fetch(`${BASE_URL}/interactions`, {
-      method: "GET",
-      headers: authHeaders(false),
-    });
-    return handleResponse<UserInteraction[]>(response);
-  },
-
-  create: async (payload: Omit<UserInteraction, "id" | "created_at">): Promise<UserInteraction> => {
-    const response = await fetch(`${BASE_URL}/interactions`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
-    return handleResponse<UserInteraction>(response);
-  }
-};
-
-// ==================== RECOMMENDATIONS API ====================
-export const recommendationsApi = {
-  getForUser: async (userId: string): Promise<Recommendation[]> => {
-    const response = await fetch(`${BASE_URL}/recommendations/${userId}`, {
-      method: "GET",
-      headers: authHeaders(false),
-    });
-    return handleResponse<Recommendation[]>(response);
-  }
-};
-
-// ==================== LIBRARY API ====================
-export const libraryApi = {
-  getAll: async (): Promise<LibraryItem[]> => {
-    const response = await fetch(`${BASE_URL}/library`, {
-      method: "GET",
-      headers: authHeaders(false),
-    });
-    return handleResponse<LibraryItem[]>(response);
-  },
-
-  create: async (payload: Omit<LibraryItem, "id" | "created_at" | "book">): Promise<LibraryItem> => {
-    const response = await fetch(`${BASE_URL}/library`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
-    return handleResponse<LibraryItem>(response);
-  },
-
-  update: async (id: string, payload: Partial<LibraryItem>): Promise<LibraryItem> => {
-    const response = await fetch(`${BASE_URL}/library/${id}`, {
-      method: "PUT",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
-    return handleResponse<LibraryItem>(response);
-  },
-
-  delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/library/${id}`, {
-      method: "DELETE",
-      headers: authHeaders(false),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete library item");
-    }
-  }
-};
-
-// ==================== INSTITUTION API ====================
-export const institutionApi = {
-  getAll: async (): Promise<Institution[]> => {
-    const response = await fetch(`${BASE_URL}/institution`, {
-      method: "GET",
-      headers: authHeaders(false),
-    });
-    return handleResponse<Institution[]>(response);
-  },
-
-  create: async (payload: Omit<Institution, "id" | "created_at">): Promise<Institution> => {
-    const response = await fetch(`${BASE_URL}/institution`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
-    return handleResponse<Institution>(response);
-  }
-};
-
-// ==================== MARKETPLACE API ====================
-export const marketplaceApi = {
-  getAll: async (): Promise<MarketplaceItem[]> => {
-    const response = await fetch(`${BASE_URL}/marketplace`, {
-      method: "GET",
-      headers: authHeaders(false),
-    });
-    return handleResponse<MarketplaceItem[]>(response);
-  },
-
-  create: async (payload: Omit<MarketplaceItem, "id" | "created_at" | "book">): Promise<MarketplaceItem> => {
-    const response = await fetch(`${BASE_URL}/marketplace`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
-    return handleResponse<MarketplaceItem>(response);
-  }
-};
-
-// ==================== BOOKS API ====================
 export const booksApi = {
-  getAll: async (): Promise<Book[]> => {
-    const response = await fetch(`${BASE_URL}/books`, {
-      method: "GET",
-      headers: authHeaders(false),
-    });
-    return handleResponse<Book[]>(response);
+  list() {
+    return request<Book[]>("/api/books");
   },
-
-  getAvailable: async (): Promise<Book[]> => {
-    const response = await fetch(`${BASE_URL}/books/available`, {
-      method: "GET",
-      headers: authHeaders(false),
+  get(bookId: string) {
+    return request<Book>(`/api/books/${bookId}`);
+  },
+  create(payload: BookPayload) {
+    return request<Book>("/api/books", {
+      method: "POST",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
     });
-    return handleResponse<Book[]>(response);
-  }
+  },
+  update(bookId: string, payload: BookPayload) {
+    return request<Book>(`/api/books/${bookId}`, {
+      method: "PUT",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  patch(bookId: string, payload: Partial<BookPayload>) {
+    return request<Book>(`/api/books/${bookId}`, {
+      method: "PATCH",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  remove(bookId: string) {
+    return request<void>(`/api/books/${bookId}`, {
+      method: "DELETE",
+    });
+  },
+  listAvailable(token: string) {
+    return request<Book[]>("/api/books/available", {
+      headers: buildHeaders(token, false),
+    });
+  },
 };
 
-export default {
-  auth: authApi,
-  preferences: preferencesApi,
-  interactions: interactionsApi,
-  recommendations: recommendationsApi,
-  library: libraryApi,
-  institution: institutionApi,
-  marketplace: marketplaceApi,
-  books: booksApi
+export const preferencesApi = {
+  list(token: string) {
+    return request<UserPreference[]>("/api/users/preferences", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  create(token: string, payload: UserPreferencePayload) {
+    return request<UserPreference>("/api/users/preferences", {
+      method: "POST",
+      headers: buildHeaders(token, true),
+      body: JSON.stringify(payload),
+    });
+  },
 };
+
+export const interactionsApi = {
+  list(token: string) {
+    return request<UserInteraction[]>("/api/interactions", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  create(token: string, payload: UserInteractionPayload) {
+    return request<UserInteraction>("/api/interactions", {
+      method: "POST",
+      headers: buildHeaders(token, true),
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
+export const libraryApi = {
+  list(token: string, status?: string) {
+    const query = status ? `?status=${encodeURIComponent(status)}` : "";
+    return request<LibraryItem[]>(`/api/library/${query}`, {
+      headers: buildHeaders(token, false),
+    });
+  },
+  add(token: string, bookId: string, status: string) {
+    const query = `?book_id=${encodeURIComponent(bookId)}&status=${encodeURIComponent(status)}`;
+    return request<LibraryItem>(`/api/library/${query}`, {
+      method: "POST",
+      headers: buildHeaders(token, false),
+    });
+  },
+  updateStatus(token: string, libraryId: string, status: string) {
+    return request<{ id: string; status: string }>(
+      `/api/library/${libraryId}/status?status=${encodeURIComponent(status)}`,
+      {
+        method: "PATCH",
+        headers: buildHeaders(token, false),
+      }
+    );
+  },
+  remove(token: string, libraryId: string) {
+    return request<{ success: boolean }>(`/api/library/${libraryId}`, {
+      method: "DELETE",
+      headers: buildHeaders(token, false),
+    });
+  },
+};
+
+export const aiApi = {
+  send(message: string) {
+    return request<{ reply: string }>("/api/ai/chat", {
+      method: "POST",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify({ message }),
+    });
+  },
+};
+
+export const institutionsApi = {
+  list(page = 1, limit = 20) {
+    return request<Institution[]>(`/institutions?page=${page}&limit=${limit}`);
+  },
+  create(payload: InstitutionPayload) {
+    return request<Institution>("/institutions", {
+      method: "POST",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
+export const corporateClubsApi = {
+  list(page = 1, limit = 20) {
+    return request<CorporateClub[]>(`/corporate-clubs?page=${page}&limit=${limit}`);
+  },
+  create(payload: CorporateClubPayload) {
+    return request<CorporateClub>("/corporate-clubs", {
+      method: "POST",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
+export const communityGroupsApi = {
+  list(page = 1, limit = 20) {
+    return request<CommunityGroup[]>(`/community-groups?page=${page}&limit=${limit}`);
+  },
+  create(payload: CommunityGroupPayload) {
+    return request<CommunityGroup>("/community-groups", {
+      method: "POST",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
+export const marketplaceApi = {
+  list(page = 1, limit = 20) {
+    return request<MarketplaceItem[]>(`/marketplaces?page=${page}&limit=${limit}`);
+  },
+  create(payload: MarketplacePayload) {
+    return request<MarketplaceItem>("/marketplaces", {
+      method: "POST",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
+export function getApiRoot() {
+  return API_ROOT;
+}

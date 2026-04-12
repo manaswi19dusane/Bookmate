@@ -1,82 +1,85 @@
-import { useState, useEffect } from "react";
-import { recommendationsApi, authApi, Recommendation } from "../services/api";
-import BookCard from "../Componants/BookCard.tsx";
-import "../css/BookCard.css";
+import { useEffect, useMemo, useState } from "react";
+import BookCard from "../Componants/BookCard";
+import { booksApi, interactionsApi, preferencesApi, type Book, type UserInteraction, type UserPreference } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+
+type Recommendation = {
+  book: Book;
+  reason: string;
+  score: number;
+};
 
 export default function Recommendations() {
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const { token } = useAuth();
+  const [books, setBooks] = useState<Book[]>([]);
+  const [preferences, setPreferences] = useState<UserPreference[]>([]);
+  const [interactions, setInteractions] = useState<UserInteraction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchRecommendations();
-  }, []);
+    if (!token) return;
+    setLoading(true);
+    Promise.all([booksApi.listAvailable(token), preferencesApi.list(token), interactionsApi.list(token)])
+      .then(([availableBooks, loadedPreferences, loadedInteractions]) => {
+        setBooks(availableBooks);
+        setPreferences(loadedPreferences);
+        setInteractions(loadedInteractions);
+      })
+      .catch((err) => setError((err as Error).message || "Unable to build recommendations."))
+      .finally(() => setLoading(false));
+  }, [token]);
 
-  const fetchRecommendations = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      
-      const user = authApi.getCurrentUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
+  const recommendations = useMemo<Recommendation[]>(() => {
+    const preferenceAuthors = new Set(preferences.map((preference) => preference.author.toLowerCase()));
+    const interactedBookIds = new Set(interactions.map((interaction) => interaction.book_id));
 
-      const data = await recommendationsApi.getForUser(user.id);
-      setRecommendations(data);
-    } catch (err) {
-      setError((err as Error).message || "Failed to load recommendations");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="page-container">
-        <h2>Recommendations</h2>
-        <div className="loading">Loading recommendations...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="page-container">
-        <h2>Recommendations</h2>
-        <div className="error">{error}</div>
-        <button onClick={fetchRecommendations} className="btn-primary">
-          Try Again
-        </button>
-      </div>
-    );
-  }
+    return books
+      .filter((book) => !interactedBookIds.has(book.id))
+      .map((book) => {
+        const authorMatch = preferenceAuthors.has(book.author.toLowerCase());
+        const score = authorMatch ? 0.9 : 0.6;
+        return {
+          book,
+          score,
+          reason: authorMatch
+            ? `Matches one of your preferred authors: ${book.author}`
+            : `Available to explore based on your current reading activity.`,
+        };
+      })
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 6);
+  }, [books, interactions, preferences]);
 
   return (
-    <div className="page-container">
-      <h2>Your Book Recommendations</h2>
-      
-      {recommendations.length === 0 ? (
-        <div className="empty-state">
-          <p>No recommendations available yet.</p>
-          <p>Add more preferences and interactions to get personalized recommendations.</p>
+    <section className="page-shell">
+      <div className="section-heading">
+        <p className="page-eyebrow">Discover</p>
+        <h1>Recommendations</h1>
+        <p>This view combines existing backend data from available books, preferences, and interactions.</p>
+      </div>
+
+      {loading ? (
+        <p className="page-status">Building recommendations...</p>
+      ) : error ? (
+        <p className="form-error">{error}</p>
+      ) : recommendations.length === 0 ? (
+        <div className="empty-panel">
+          <h3>No recommendations yet</h3>
+          <p>Add preferences and interactions to help the UI rank books for you.</p>
         </div>
       ) : (
-        <div className="books-grid">
-          {recommendations.map((rec) => (
-            <div key={rec.book_id} className="recommendation-card">
-              <BookCard book={rec.book} />
-              <div className="recommendation-score">
-                <span className="score-label">Match Score:</span>
-                <span className="score-value">{Math.round(rec.score * 100)}%</span>
-              </div>
-              {rec.reason && (
-                <p className="recommendation-reason">{rec.reason}</p>
-              )}
-            </div>
+        <div className="card-grid">
+          {recommendations.map((recommendation) => (
+            <BookCard
+              key={recommendation.book.id}
+              book={recommendation.book}
+              badge={`${Math.round(recommendation.score * 100)}% match`}
+              secondaryText={recommendation.reason}
+            />
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }

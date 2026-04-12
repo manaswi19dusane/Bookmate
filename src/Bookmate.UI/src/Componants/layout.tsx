@@ -1,46 +1,24 @@
-// Import React hooks + helpers
-import { useState, cloneElement, ReactElement } from "react";
-
-// Import components
+import { useState, cloneElement, isValidElement } from "react";
 import Navbar from "./Navbar";
 import Sidebar from "./sidebar";
 import Chatbot from "./ChatBot/Chatbot";
+type SearchInjectedChild = React.ReactElement<{ searchQuery?: string }>;
 
-// Define type for children props injection
-type ChildProps = {
-  searchQuery?: string;
-};
-
-// Layout Component
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  // 🔹 State for chatbot open/close
   const [chatOpen, setChatOpen] = useState(false);
-
-  // 🔹 GLOBAL Search State
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <>
-      {/* 🔵 NAVBAR */}
-      <Navbar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-
-      {/* 🔵 MAIN LAYOUT */}
+      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="layout">
         <Sidebar onOpenChat={() => setChatOpen(true)} />
-
         <div className="main-content">
-          {/* ✅ SAFE CLONE ELEMENT */}
-          {children &&
-            cloneElement(children as ReactElement<ChildProps>, {
-              searchQuery,
-            })}
+          {isValidElement(children)
+            ? cloneElement(children as SearchInjectedChild, { searchQuery })
+            : children}
         </div>
       </div>
-
-      {/* 🔵 CHATBOT */}
       {chatOpen && (
         <Chatbot
           open={chatOpen}

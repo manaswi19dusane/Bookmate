@@ -1,101 +1,81 @@
-import { useState, useEffect } from "react";
-import Layout from "../Componants/layout";
-import '../css/BookCard.css';
+import { useEffect, useState } from "react";
+import { corporateClubsApi, type CorporateClub } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
-const Club = () => {
-  const [clubs, setClubs] = useState<any[]>([]);
+export default function Club() {
+  const { user } = useAuth();
+  const [clubs, setClubs] = useState<CorporateClub[]>([]);
+  const [form, setForm] = useState({
+    name: "",
+    organization_name: "",
+    description: "",
+    max_members: "25",
+  });
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchClubs();
-  }, [filter]);
-
-  const fetchClubs = async () => {
+  async function loadClubs() {
+    setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const url = filter 
-        ? `http://localhost:8000/api/corporate-clubs?filter=${filter}` 
-        : 'http://localhost:8000/api/corporate-clubs';
-        
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setClubs(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch clubs:', error);
+      setClubs(await corporateClubsApi.list());
+    } catch (err) {
+      setError((err as Error).message || "Unable to load corporate clubs.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  if (loading) {
-    return <div className="loading">Loading clubs...</div>;
+  useEffect(() => {
+    void loadClubs();
+  }, []);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!user) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await corporateClubsApi.create({
+        name: form.name,
+        organization_name: form.organization_name,
+        admin_user_id: user.id,
+        description: form.description || undefined,
+        max_members: Number(form.max_members),
+        is_active: true,
+      });
+      setForm({ name: "", organization_name: "", description: "", max_members: "25" });
+      await loadClubs();
+    } catch (err) {
+      setError((err as Error).message || "Unable to create corporate club.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
-      <div className="container mx-auto p-6">
-        <div className="page-header">
-          <h1>Corporate Clubs</h1>
-          <div className="filters">
-            <button 
-              className={filter === null ? 'active' : ''} 
-              onClick={() => setFilter(null)}
-            >
-              All
-            </button>
-            <button 
-              className={filter === 'technology' ? 'active' : ''} 
-              onClick={() => setFilter('technology')}
-            >
-              Technology
-            </button>
-            <button 
-              className={filter === 'finance' ? 'active' : ''} 
-              onClick={() => setFilter('finance')}
-            >
-              Finance
-            </button>
-            <button 
-              className={filter === 'healthcare' ? 'active' : ''} 
-              onClick={() => setFilter('healthcare')}
-            >
-              Healthcare
-            </button>
-          </div>
-        </div>
+    <section className="page-shell">
+      <div className="section-heading">
+        <p className="page-eyebrow">Communities</p>
+        <h1>Corporate clubs</h1>
+        <p>See active clubs and create a new one with your current authenticated user id.</p>
+      </div>
 
-        <div className="club-grid">
-          {clubs.length === 0 ? (
-            <div className="empty-state">
-              <p>No corporate clubs found</p>
-              <p>Create your first corporate club to start sharing books</p>
-            </div>
-          ) : (
-            clubs.map(club => (
-              <div key={club.id} className="club-item">
-                <div className="club-card">
-                  <div className="club-header">
-                    <h3>{club.name}</h3>
-                    <span className="club-type">{club.company_name}</span>
-                  </div>
-                  <p className="club-description">{club.description}</p>
-                  <div className="club-actions">
-                    <button className="join-btn">Join Club</button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+      <div className="split-layout">
+        <form className="form-card" onSubmit={handleSubmit}>
+          <label>Name<input value={form.name} onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))} required /></label>
+          <label>Organization<input value={form.organization_name} onChange={(event) => setForm((prev) => ({ ...prev, organization_name: event.target.value }))} required /></label>
+          <label>Max members<input type="number" min="1" value={form.max_members} onChange={(event) => setForm((prev) => ({ ...prev, max_members: event.target.value }))} /></label>
+          <label>Description<textarea rows={4} value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} /></label>
+          {error && <p className="form-error">{error}</p>}
+          <button className="primary-button" type="submit" disabled={submitting}>{submitting ? "Creating..." : "Create club"}</button>
+        </form>
+
+        <div className="list-panel">
+          <h2>Current clubs</h2>
+          {loading ? <p className="page-status">Loading clubs...</p> : clubs.length === 0 ? <div className="empty-panel"><h3>No clubs yet</h3><p>Create one to get started.</p></div> : <div className="stack-list">{clubs.map((club) => <article key={club.id} className="stack-card"><strong>{club.name}</strong><span>{club.organization_name}</span><small>{club.description || `${club.max_members || "No"} seats · ${club.is_active ? "Active" : "Inactive"}`}</small></article>)}</div>}
         </div>
       </div>
+    </section>
   );
-};
-
-export default Club;
+}

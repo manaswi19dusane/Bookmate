@@ -1,10 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Layout from "./Componants/layout";
 import Home from "./Pages/Home";
 import AddBook from "./Pages/AddBook";
 import Wishlist from "./Pages/Wishlist";
-import Layout from "./Componants/layout";
-import BookDetail from "./Componants/BookDetail";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import Preferences from "./Pages/Preferences";
@@ -15,170 +15,73 @@ import Institution from "./Pages/Institution";
 import Club from "./Pages/Club";
 import Community from "./Pages/Community";
 import Marketplace from "./Pages/Marketplace";
-import { User } from "./Api/auth";
+import BookDetail from "./Componants/BookDetail";
 
-const PrivateRoute = ({ children }: { children: ReactNode }) => {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" replace />;
-};
+function PrivateRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
 
-const AppWrapper = () => {
-  const navigate = useNavigate();
+function PublicRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
+}
 
-  const setUser = (token: string, user: User) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-  };
-
+function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<Login onAuthSuccess={setUser} />} />
-      <Route path="/register" element={<Register onAuthSuccess={setUser} />} />
-      <Route path="/signup" element={<Register onAuthSuccess={setUser} />} />
-
       <Route
-        path="/book/:id"
+        path="/login"
         element={
-          <PrivateRoute>
-            <Layout>
-              <BookDetail />
-            </Layout>
-          </PrivateRoute>
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
         }
       />
-
       <Route
-        path="/"
+        path="/register"
         element={
-          <PrivateRoute>
-            <Layout>
-              <Home />
-            </Layout>
-          </PrivateRoute>
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
         }
       />
-
-      <Route
-        path="/preferences"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Preferences />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/interactions"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Interactions />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/add"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <AddBook />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/wishlist"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Wishlist />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/library"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Library />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/recommendations"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Recommendations />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/institution"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Institution />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/club"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Club />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/community"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Community />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/marketplace"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Marketplace />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
+      {[
+        { path: "/", element: <Home /> },
+        { path: "/add", element: <AddBook /> },
+        { path: "/book/:id", element: <BookDetail /> },
+        { path: "/wishlist", element: <Wishlist /> },
+        { path: "/library", element: <Library /> },
+        { path: "/marketplace", element: <Marketplace /> },
+        { path: "/preferences", element: <Preferences /> },
+        { path: "/interactions", element: <Interactions /> },
+        { path: "/recommendations", element: <Recommendations /> },
+        { path: "/institution", element: <Institution /> },
+        { path: "/club", element: <Club /> },
+        { path: "/community", element: <Community /> },
+      ].map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={
+            <PrivateRoute>
+              <Layout>{route.element}</Layout>
+            </PrivateRoute>
+          }
+        />
+      ))}
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
-};
+}
 
-const App = () => {
+export default function App() {
   return (
-    <Router>
-      <AppWrapper />
-    </Router>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
-};
-
-export default App;
+}

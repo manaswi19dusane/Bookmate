@@ -1,130 +1,122 @@
 import { useEffect, useState } from "react";
-import { createPreference, fetchPreferences, UserPreference, fetchAvailableBooks } from "../Api/auth";
-import "../css/preferences.css";
+import { booksApi, preferencesApi, type Book, type UserPreference } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Preferences() {
+  const { token } = useAuth();
   const [preferences, setPreferences] = useState<UserPreference[]>([]);
-  const [genre, setGenre] = useState("");
-  const [author, setAuthor] = useState("");
-  const [availableBooks, setAvailableBooks] = useState<any[]>([]);
-  const [selectedBook, setSelectedBook] = useState<any>(null);
+  const [availableBooks, setAvailableBooks] = useState<Book[]>([]);
+  const [form, setForm] = useState({ genre: "", author: "", book_id: "" });
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const loadPreferences = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const [data, books] = await Promise.all([
-        fetchPreferences(),
-        fetchAvailableBooks()
-      ]);
-      setPreferences(data);
-      setAvailableBooks(books);
-    } catch (err) {
-      setError((err as Error).message || "Could not load preferences");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadPreferences();
-  }, []);
+    if (!token) return;
+    setLoading(true);
+    Promise.all([preferencesApi.list(token), booksApi.listAvailable(token)])
+      .then(([loadedPreferences, books]) => {
+        setPreferences(loadedPreferences);
+        setAvailableBooks(books);
+      })
+      .catch((err) => setError((err as Error).message || "Unable to load preferences."))
+      .finally(() => setLoading(false));
+  }, [token]);
 
-  const handleAddPreference = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!token) return;
+    setSubmitting(true);
     setError("");
-    if (!selectedBook && !genre && !author) {
-      setError("Please select a book or enter genre/author");
+
+    if (!form.genre.trim() || !form.author.trim()) {
+      setError("Genre and author are required.");
+      setSubmitting(false);
       return;
     }
 
     try {
-      const preferencePayload = selectedBook
-        ? { book_id: selectedBook.id }
-        : { genre, author };
-      const preference = await createPreference(preferencePayload);
-      setPreferences((prev) => [preference, ...prev]);
-      setGenre("");
-      setAuthor("");
-      setSelectedBook(null);
+      const created = await preferencesApi.create(token, {
+        genre: form.genre,
+        author: form.author,
+        book_id: form.book_id || undefined,
+      });
+      setPreferences((prev) => [created, ...prev]);
+      setForm({ genre: "", author: "", book_id: "" });
     } catch (err) {
-      setError((err as Error).message || "Could not create preference");
+      setError((err as Error).message || "Unable to save preference.");
+    } finally {
+      setSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className="preferences-page">
-      <div className="preferences-header">
-        <h2>Preferences</h2>
+    <section className="page-shell">
+      <div className="section-heading">
+        <p className="page-eyebrow">Profile</p>
+        <h1>Your reading preferences</h1>
+        <p>Save favorite genres and authors, and optionally link them to a book the backend already knows about.</p>
       </div>
 
-      <div className="preferences-container">
-        <form className="preference-form" onSubmit={handleAddPreference}>
-          <div className="preference-inputs">
-            <input
-              placeholder="Genre"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-            />
-            <input
-              placeholder="Author"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-            />
-          </div>
-          <button type="submit">Add Preference</button>
+      <div className="split-layout">
+        <form className="form-card" onSubmit={handleSubmit}>
+          <label>
+            Genre
+            <input value={form.genre} onChange={(event) => setForm((prev) => ({ ...prev, genre: event.target.value }))} placeholder="Classics" />
+          </label>
+          <label>
+            Author
+            <input value={form.author} onChange={(event) => setForm((prev) => ({ ...prev, author: event.target.value }))} placeholder="Jane Austen" />
+          </label>
+          <label>
+            Link to a book
+            <select
+              value={form.book_id}
+              onChange={(event) => {
+                const selected = availableBooks.find((book) => book.id === event.target.value);
+                setForm((prev) => ({
+                  ...prev,
+                  book_id: event.target.value,
+                  author: selected?.author || prev.author,
+                }));
+              }}
+            >
+              <option value="">Optional</option>
+              {availableBooks.map((book) => (
+                <option key={book.id} value={book.id}>
+                  {book.title} by {book.author}
+                </option>
+              ))}
+            </select>
+          </label>
+          {error && <p className="form-error">{error}</p>}
+          <button type="submit" className="primary-button" disabled={submitting}>
+            {submitting ? "Saving..." : "Save preference"}
+          </button>
         </form>
 
-        <div className="available-books">
-          <h3>Select from Available Books</h3>
-          {availableBooks.length === 0 ? (
-            <p>No available books to select from</p>
+        <div className="list-panel">
+          <h2>Saved preferences</h2>
+          {loading ? (
+            <p className="page-status">Loading preferences...</p>
+          ) : preferences.length === 0 ? (
+            <div className="empty-panel">
+              <h3>No preferences yet</h3>
+              <p>Add your first genre or author to personalize the experience.</p>
+            </div>
           ) : (
-            <div className="books-grid">
-              {availableBooks.map((book) => (
-                <div
-                  key={book.id}
-                  className={`book-item ${selectedBook?.id === book.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedBook(book)}
-                >
-                  <h4>{book.title}</h4>
-                  <p>{book.author}</p>
-                  <small>{book.language}</small>
-                </div>
+            <div className="stack-list">
+              {preferences.map((preference) => (
+                <article key={preference.id} className="stack-card">
+                  <strong>{preference.genre}</strong>
+                  <span>{preference.author}</span>
+                  <small>{preference.book_id ? `Linked book: ${preference.book_id}` : "Manual preference"}</small>
+                </article>
               ))}
             </div>
           )}
         </div>
       </div>
-
-      {error && <p className="error-text">{error}</p>}
-
-      {loading ? (
-        <p>Loading preferences...</p>
-      ) : preferences.length === 0 ? (
-        <p>No preferences yet.</p>
-      ) : (
-        <div className="preferences-list">
-          {preferences.map((preference) => (
-            <div key={preference.id} className="preference-item">
-              {preference.book_id ? (
-                <div className="book-preference">
-                  <strong>Book Preference</strong>
-                  <span>Book ID: {preference.book_id}</span>
-                </div>
-              ) : (
-                <>
-                  <strong>{preference.genre}</strong>
-                  <span>{preference.author}</span>
-                </>
-              )}
-              <small>{new Date(preference.created_at).toLocaleString()}</small>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </section>
   );
 }

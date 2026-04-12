@@ -1,8 +1,8 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../css/Navbar.css";
-import { FaBell, FaUserCircle } from "react-icons/fa";
 import logo from "../assets/Images/LOGO.png";
+import { useAuth } from "../context/AuthContext";
 
 /*
   👉 Props coming from Layout.tsx
@@ -15,17 +15,16 @@ type NavbarProps = {
 };
 
 export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
-  const [authenticated, setAuthenticated] = useState(false);
+  const { isAuthenticated, logout, user } = useAuth();
+  const [authenticated, setAuthenticated] = useState(isAuthenticated);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setAuthenticated(Boolean(localStorage.getItem("token")));
-  }, []);
+    setAuthenticated(isAuthenticated);
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setAuthenticated(false);
+    logout();
     navigate("/login");
   };
 
@@ -54,6 +53,7 @@ export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
 
       {/* RIGHT SECTION */}
       <div className="nav-right">
+        <span className="nav-user">{user?.email ?? "Guest"}</span>
         <Link to="/library">Library</Link>
         <Link to="/institution">Institution</Link>
         <Link to="/club">Club</Link>

@@ -1,106 +1,20 @@
-/* =========================
-    AUTH PAGES (LOGIN & REGISTER)
-    ========================= */
 .auth-page {
-  min-height: calc(100vh - 100px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
+  background:
+    radial-gradient(circle at top right, rgba(200, 132, 79, 0.22), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(13, 108, 99, 0.18), transparent 35%),
+    linear-gradient(180deg, #f8f2e7 0%, #eef6fb 100%);
 }
 
 .auth-form {
-  background: #ffffff;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 420px;
-  border-top: 4px solid #2563eb;
+  position: relative;
 }
 
-.auth-form h2 {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 30px;
-  color: #1e293b;
-}
-
-.auth-form input {
-  width: 100%;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  border: 1px solid #d1d9e6;
-  border-radius: 8px;
-  font-size: 15px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.auth-form input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.auth-form button {
-  width: 100%;
-  background: linear-gradient(90deg, #2563eb, #3b82f6);
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 8px;
-}
-
-.auth-form button:hover {
-  background: linear-gradient(90deg, #1d4ed8, #2563eb);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-}
-
-.auth-form .error-text {
-  color: #dc2626;
-  font-size: 14px;
-  padding: 12px 16px;
-  background: #fef2f2;
-  border-radius: 8px;
-  border: 1px solid #fecaca;
-  margin-top: 16px;
-  text-align: center;
-}
-
-.auth-form .auth-link {
-  text-align: center;
-  margin-top: 24px;
-  font-size: 14px;
-  color: #64748b;
-}
-
-.auth-form .auth-link a {
-  color: #2563eb;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.auth-form .auth-link a:hover {
-  text-decoration: underline;
-}
-
-/* =========================
-   MOBILE RESPONSIVE
-   ========================= */
-@media (max-width: 480px) {
-  .auth-form {
-    padding: 30px 24px;
-  }
-
-  .auth-form h2 {
-    font-size: 24px;
-  }
+.auth-form::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 92px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c8844f, #0d6c63);
 }

@@ -1,158 +1,92 @@
 import { useState } from "react";
-import { createBook } from "../Api/Books";
-import "../css/AddBook.css";
+import { useNavigate } from "react-router-dom";
+import { booksApi } from "../services/api";
 
 export default function AddBook() {
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [language, setLanguage] = useState("");
-  const [publishedDate, setPublishedDate] = useState("");
-  const [purchasedDate, setPurchasedDate] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    title: "",
+    author: "",
+    language: "",
+    published_date: "",
+    purchased_date: "",
+    image_url: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
 
+    if (!form.title.trim() || !form.author.trim() || !form.language.trim()) {
+      setError("Title, author, and language are required.");
+      return;
+    }
+
+    setSaving(true);
     try {
-      await createBook({
-        title,
-        author,
-        language,
-        published_date: publishedDate || null,
-        purchased_date: purchasedDate || null,
-        image_url: imageUrl || null,
+      await booksApi.create({
+        ...form,
+        published_date: form.published_date || null,
+        purchased_date: form.purchased_date || null,
+        image_url: form.image_url || null,
       });
-
-      alert("Book added successfully!");
-
-
-      setTitle("");
-      setAuthor("");
-      setLanguage("");
-      setPublishedDate("");
-      setPurchasedDate("");
-      setImageUrl("");
-
+      navigate("/");
     } catch (err) {
-      alert("Failed to add book");
-      console.error(err);
+      setError((err as Error).message || "Unable to create the book.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
   return (
-    <div className="add-container">
-      <form className="add-card" onSubmit={handleSubmit}>
-        <h2 className="form-title">Add New Book</h2>
+    <section className="page-shell form-page">
+      <div className="section-heading">
+        <p className="page-eyebrow">Books</p>
+        <h1>Add a new book</h1>
+        <p>Create a real book entry using the existing backend API.</p>
+      </div>
 
+      <form className="form-card" onSubmit={handleSubmit}>
         <div className="form-grid">
-          {/* LEFT: Upload box */}
-          <div className="upload-box">
-            {/* CLICKABLE UPLOAD AREA */}
-            <label className="upload-inner">
-              <span className="plus">+</span>
-              <p>Upload book cover</p>
-              <small>Click to upload</small>
-              <input type="file" className="file-input" hidden/>
-            </label>
-
-            {/* CAMERA BUTTON */}
-            <button type="button" className="camera-btn">
-              📸 Take Picture
-            </button>
-
-            {/* IMAGE URL */}
-            <input
-              className="image-url-input"
-              placeholder="Or paste image URL"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
-          </div>
-
-          {/* RIGHT: Form Fields */}
-          <div className="form-fields">
-            {/* BOOK TITLE */}
-            <label>Book Title</label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter the full name of the book"
-              required
-            />
-
-            {/* AUTHOR */}
-            <label>Author</label>
-            <input
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="Author name"
-              required
-            />
-
-            {/* LANGUAGE + STATUS */}
-            <div className="row">
-              <div>
-                <label>Language</label>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  required
-                >
-                  <option value="">Select Language</option>
-                  <option value="English">English</option>
-                  <option value="Marathi">Marathi</option>
-                </select>
-              </div>
-
-              <div>
-                <label>Status</label>
-                <select>
-                  <option value="Owned">Owned</option>
-                  <option value="Wishlist">Wishlist</option>
-                </select>
-              </div>
-            </div>
-
-            {/* PUBLISHED DATE (KEEP) */}
-            <label>Published Date</label>
-            <input
-              type="date"
-              value={publishedDate}
-              onChange={(e) => setPublishedDate(e.target.value)}
-            />
-
-            {/* PURCHASED DATE (KEEP) */}
-            <label>Purchased Date</label>
-            <input
-              type="date"
-              value={purchasedDate}
-              onChange={(e) => setPurchasedDate(e.target.value)}
-            />
-
-            {/* DESCRIPTION (OPTIONAL / UI ONLY) */}
-            <label>Description</label>
-            <textarea
-              rows={4}
-              placeholder="Add a short description..."
-            />
-          </div>
+          <label>
+            Title
+            <input value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} required />
+          </label>
+          <label>
+            Author
+            <input value={form.author} onChange={(event) => setForm((prev) => ({ ...prev, author: event.target.value }))} required />
+          </label>
+          <label>
+            Language
+            <input value={form.language} onChange={(event) => setForm((prev) => ({ ...prev, language: event.target.value }))} required />
+          </label>
+          <label>
+            Published date
+            <input type="date" value={form.published_date} onChange={(event) => setForm((prev) => ({ ...prev, published_date: event.target.value }))} />
+          </label>
+          <label>
+            Purchased date
+            <input type="date" value={form.purchased_date} onChange={(event) => setForm((prev) => ({ ...prev, purchased_date: event.target.value }))} />
+          </label>
+          <label className="full-width">
+            Cover image URL
+            <input value={form.image_url} onChange={(event) => setForm((prev) => ({ ...prev, image_url: event.target.value }))} placeholder="https://..." />
+          </label>
         </div>
 
-        {/* ACTIONS */}
-        <div className="actions">
-          <button type="button" className="cancel">
+        {error && <p className="form-error">{error}</p>}
+
+        <div className="form-actions">
+          <button type="button" className="secondary-button" onClick={() => navigate(-1)}>
             Cancel
           </button>
-
-          <button type="submit" className="save" disabled={loading}>
-            {loading ? "Saving..." : "💾 Save Book"}
+          <button type="submit" className="primary-button" disabled={saving}>
+            {saving ? "Saving..." : "Create book"}
           </button>
         </div>
       </form>
-    </div>
+    </section>
   );
 }

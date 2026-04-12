@@ -1,106 +1,124 @@
 import { useEffect, useState } from "react";
-import { createInteraction, fetchInteractions, UserInteraction } from "../Api/auth";
-import "../css/interactions.css";
+import { booksApi, interactionsApi, type Book, type UserInteraction } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Interactions() {
+  const { token } = useAuth();
   const [interactions, setInteractions] = useState<UserInteraction[]>([]);
-  const [bookId, setBookId] = useState("");
-  const [interactionType, setInteractionType] = useState("view");
-  const [rating, setRating] = useState<number | "">("");
+  const [books, setBooks] = useState<Book[]>([]);
+  const [form, setForm] = useState({
+    book_id: "",
+    interaction_type: "view",
+    rating: "",
+  });
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const loadInteractions = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await fetchInteractions();
-      setInteractions(data);
-    } catch (err) {
-      setError((err as Error).message || "Could not load interactions");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadInteractions();
-  }, []);
+    if (!token) return;
+    setLoading(true);
+    Promise.all([interactionsApi.list(token), booksApi.list()])
+      .then(([loadedInteractions, loadedBooks]) => {
+        setInteractions(loadedInteractions);
+        setBooks(loadedBooks);
+      })
+      .catch((err) => setError((err as Error).message || "Unable to load interactions."))
+      .finally(() => setLoading(false));
+  }, [token]);
 
-  const handleAddInteraction = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!token) return;
+    setSubmitting(true);
     setError("");
-
-    const payload = {
-      book_id: bookId,
-      interaction_type: interactionType,
-      rating: rating === "" ? undefined : Number(rating),
-    };
-
     try {
-      const interaction = await createInteraction(payload);
-      setInteractions((prev) => [interaction, ...prev]);
-      setBookId("");
-      setInteractionType("view");
-      setRating("");
+      const created = await interactionsApi.create(token, {
+        book_id: form.book_id,
+        interaction_type: form.interaction_type,
+        rating: form.rating ? Number(form.rating) : undefined,
+      });
+      setInteractions((prev) => [created, ...prev]);
+      setForm({ book_id: "", interaction_type: "view", rating: "" });
     } catch (err) {
-      setError((err as Error).message || "Could not create interaction");
+      setError((err as Error).message || "Unable to save interaction.");
+    } finally {
+      setSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className="interactions-page">
-      <div className="interactions-header">
-        <h2>Interactions</h2>
+    <section className="page-shell">
+      <div className="section-heading">
+        <p className="page-eyebrow">Activity</p>
+        <h1>Reading interactions</h1>
+        <p>Record views, likes, ratings, and purchases through the existing backend API.</p>
       </div>
 
-      <form className="interaction-form" onSubmit={handleAddInteraction}>
-        <input
-          placeholder="Book ID"
-          value={bookId}
-          onChange={(e) => setBookId(e.target.value)}
-          required
-        />
-        <select
-          value={interactionType}
-          onChange={(e) => setInteractionType(e.target.value)}
-        >
-          <option value="view">View</option>
-          <option value="like">Like</option>
-          <option value="rating">Rating</option>
-        </select>
-        <input
-          type="number"
-          placeholder="Rating (optional)"
-          value={rating}
-          onChange={(e) => {
-            const value = e.target.value;
-            setRating(value === "" ? "" : Number(value));
-          }}
-          min={1}
-          max={5}
-        />
-        <button type="submit">Add Interaction</button>
-      </form>
+      <div className="split-layout">
+        <form className="form-card" onSubmit={handleSubmit}>
+          <label>
+            Book
+            <select value={form.book_id} onChange={(event) => setForm((prev) => ({ ...prev, book_id: event.target.value }))} required>
+              <option value="">Choose a book</option>
+              {books.map((book) => (
+                <option key={book.id} value={book.id}>
+                  {book.title} by {book.author}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Interaction type
+            <select
+              value={form.interaction_type}
+              onChange={(event) => setForm((prev) => ({ ...prev, interaction_type: event.target.value }))}
+            >
+              <option value="view">View</option>
+              <option value="like">Like</option>
+              <option value="rating">Rating</option>
+              <option value="purchase">Purchase</option>
+            </select>
+          </label>
+          <label>
+            Rating
+            <input
+              type="number"
+              min="1"
+              max="5"
+              value={form.rating}
+              onChange={(event) => setForm((prev) => ({ ...prev, rating: event.target.value }))}
+              placeholder="Optional"
+            />
+          </label>
+          {error && <p className="form-error">{error}</p>}
+          <button className="primary-button" type="submit" disabled={submitting}>
+            {submitting ? "Saving..." : "Add interaction"}
+          </button>
+        </form>
 
-      {error && <p className="error-text">{error}</p>}
-
-      {loading ? (
-        <p>Loading interactions...</p>
-      ) : interactions.length === 0 ? (
-        <p>No interactions yet.</p>
-      ) : (
-        <div className="interactions-list">
-          {interactions.map((interaction) => (
-            <div key={interaction.id} className="interaction-item">
-              <strong>{interaction.interaction_type}</strong>
-              <span>{interaction.book_id}</span>
-              <span>Rating: {interaction.rating ?? "N/A"}</span>
-              <small>{new Date(interaction.created_at).toLocaleString()}</small>
+        <div className="list-panel">
+          <h2>History</h2>
+          {loading ? (
+            <p className="page-status">Loading interactions...</p>
+          ) : interactions.length === 0 ? (
+            <div className="empty-panel">
+              <h3>No interactions recorded</h3>
+              <p>Track a few actions to build your activity feed.</p>
             </div>
-          ))}
+          ) : (
+            <div className="stack-list">
+              {interactions.map((interaction) => (
+                <article key={interaction.id} className="stack-card">
+                  <strong>{interaction.interaction_type}</strong>
+                  <span>{books.find((book) => book.id === interaction.book_id)?.title || interaction.book_id}</span>
+                  <small>{interaction.rating ? `Rating ${interaction.rating}/5` : "No rating"}</small>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 }

@@ -1,148 +1,166 @@
-import { useState, useEffect } from 'react';
-import BookCard from '../Componants/BookCard';
-import '../css/wishlist.css';
+import { useEffect, useMemo, useState } from "react";
+import BookCard from "../Componants/BookCard";
+import { booksApi, libraryApi, type Book, type LibraryItem } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
-interface LibraryItem {
-  id: string;
-  book_id: string;
-  added_at: string;
-  status: string;
-  progress?: number;
-  notes?: string;
-}
-
-const Library = () => {
+export default function Library() {
+  const { token } = useAuth();
+  const [filter, setFilter] = useState<string>("all");
   const [items, setItems] = useState<LibraryItem[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [availableBooks, setAvailableBooks] = useState<Book[]>([]);
+  const [selectedBookId, setSelectedBookId] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("reading");
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchLibrary();
-  }, [filter]);
-
-  const fetchLibrary = async () => {
+  async function loadLibrary(currentFilter = filter) {
+    if (!token) return;
+    setLoading(true);
+    setError("");
     try {
-      const token = localStorage.getItem('token');
-      const url = filter 
-        ? `http://localhost:8000/api/library?status=${filter}` 
-        : 'http://localhost:8000/api/library';
-        
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setItems(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch library:', error);
+      const [libraryItems, allBooks, candidateBooks] = await Promise.all([
+        libraryApi.list(token, currentFilter === "all" ? undefined : currentFilter),
+        booksApi.list(),
+        booksApi.listAvailable(token),
+      ]);
+      setItems(libraryItems);
+      setBooks(allBooks);
+      setAvailableBooks(candidateBooks);
+    } catch (err) {
+      setError((err as Error).message || "Unable to load your library.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const updateStatus = async (id: string, status: string) => {
+  useEffect(() => {
+    void loadLibrary(filter);
+  }, [filter, token]);
+
+  const joinedItems = useMemo(
+    () =>
+      items.map((item) => ({
+        item,
+        book: books.find((book) => book.id === item.book_id),
+      })),
+    [items, books]
+  );
+
+  async function handleAddBook(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!token || !selectedBookId) return;
+    setSaving(true);
+    setError("");
     try {
-      const token = localStorage.getItem('token');
-      await fetch(`http://localhost:8000/api/library/${id}/status?status=${status}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      fetchLibrary();
-    } catch (error) {
-      console.error('Failed to update status:', error);
+      await libraryApi.add(token, selectedBookId, selectedStatus);
+      setSelectedBookId("");
+      setSelectedStatus("reading");
+      await loadLibrary(filter);
+    } catch (err) {
+      setError((err as Error).message || "Unable to add the book to your library.");
+    } finally {
+      setSaving(false);
     }
-  };
+  }
 
-  const removeItem = async (id: string) => {
+  async function handleStatusChange(libraryId: string, status: string) {
+    if (!token) return;
     try {
-      const token = localStorage.getItem('token');
-      await fetch(`http://localhost:8000/api/library/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      fetchLibrary();
-    } catch (error) {
-      console.error('Failed to remove item:', error);
+      await libraryApi.updateStatus(token, libraryId, status);
+      await loadLibrary(filter);
+    } catch (err) {
+      setError((err as Error).message || "Unable to update the reading status.");
     }
-  };
+  }
 
-  if (loading) {
-    return <div className="loading">Loading library...</div>;
+  async function handleRemove(libraryId: string) {
+    if (!token) return;
+    try {
+      await libraryApi.remove(token, libraryId);
+      await loadLibrary(filter);
+    } catch (err) {
+      setError((err as Error).message || "Unable to remove the library item.");
+    }
   }
 
   return (
-    <div className="library-page">
-      <div className="page-header">
-        <h1>My Library</h1>
-        <div className="filters">
-          <button 
-            className={filter === null ? 'active' : ''} 
-            onClick={() => setFilter(null)}
-          >
-            All
-          </button>
-          <button 
-            className={filter === 'reading' ? 'active' : ''} 
-            onClick={() => setFilter('reading')}
-          >
-            Reading
-          </button>
-          <button 
-            className={filter === 'completed' ? 'active' : ''} 
-            onClick={() => setFilter('completed')}
-          >
-            Completed
-          </button>
-          <button 
-            className={filter === 'wishlist' ? 'active' : ''} 
-            onClick={() => setFilter('wishlist')}
-          >
-            Wishlist
-          </button>
+    <section className="page-shell">
+      <div className="section-heading">
+        <p className="page-eyebrow">Library</p>
+        <h1>Your reading shelf</h1>
+        <p>Keep reading, completed, and wishlist items in sync with the live backend.</p>
+      </div>
+
+      <div className="toolbar">
+        <div className="toolbar-tabs">
+          {["all", "reading", "completed", "wishlist"].map((value) => (
+            <button
+              key={value}
+              className={filter === value ? "tab-button active" : "tab-button"}
+              onClick={() => setFilter(value)}
+            >
+              {value}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="library-grid">
-        {items.length === 0 ? (
-          <div className="empty-state">
-            <p>Your library is empty</p>
-            <p>Start adding books to your collection!</p>
-          </div>
-        ) : (
-          items.map(item => (
-            <div key={item.id} className="library-item">
-              <BookCard bookId={item.book_id} showActions={false} />
-              <div className="item-actions">
-                <select 
-                  value={item.status} 
-                  onChange={(e) => updateStatus(item.id, e.target.value)}
-                >
-                  <option value="reading">Reading</option>
-                  <option value="completed">Completed</option>
-                  <option value="wishlist">Wishlist</option>
-                  <option value="archived">Archived</option>
-                </select>
-                <button 
-                  className="remove-btn" 
-                  onClick={() => removeItem(item.id)}
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-};
+      <form className="inline-form" onSubmit={handleAddBook}>
+        <select value={selectedBookId} onChange={(event) => setSelectedBookId(event.target.value)} required>
+          <option value="">Add a book to library</option>
+          {availableBooks.map((book) => (
+            <option key={book.id} value={book.id}>
+              {book.title} by {book.author}
+            </option>
+          ))}
+        </select>
+        <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
+          <option value="reading">reading</option>
+          <option value="completed">completed</option>
+          <option value="wishlist">wishlist</option>
+        </select>
+        <button type="submit" className="primary-button" disabled={saving}>
+          {saving ? "Adding..." : "Add to library"}
+        </button>
+      </form>
 
-export default Library;
+      {error && <p className="form-error">{error}</p>}
+
+      {loading ? (
+        <p className="page-status">Loading library...</p>
+      ) : joinedItems.length === 0 ? (
+        <div className="empty-panel">
+          <h3>Your library is empty</h3>
+          <p>Add a book above to start tracking your reading.</p>
+        </div>
+      ) : (
+        <div className="card-grid">
+          {joinedItems.map(({ item, book }) =>
+            book ? (
+              <BookCard
+                key={item.id}
+                book={book}
+                badge={item.status}
+                secondaryText={item.notes || `Added ${new Date(item.added_at).toLocaleDateString()}`}
+                actions={
+                  <>
+                    <select value={item.status} onChange={(event) => handleStatusChange(item.id, event.target.value)}>
+                      <option value="reading">reading</option>
+                      <option value="completed">completed</option>
+                      <option value="wishlist">wishlist</option>
+                    </select>
+                    <button className="icon-button danger" onClick={() => handleRemove(item.id)}>
+                      Remove
+                    </button>
+                  </>
+                }
+              />
+            ) : null
+          )}
+        </div>
+      )}
+    </section>
+  );
+}

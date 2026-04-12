@@ -1,79 +1,42 @@
-/* overlay */
 .drawer-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  inset: 0;
   display: flex;
   justify-content: flex-end;
-  z-index: 1000;
+  background: rgba(18, 50, 82, 0.28);
+  backdrop-filter: blur(6px);
+  z-index: 40;
 }
 
-/* drawer */
 .drawer {
-  width: 420px;
-  height: 100vh;                 /* 🔑 full height */
-  background: #fff;
+  width: min(100%, 440px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: -18px 0 48px rgba(29, 55, 82, 0.18);
 }
 
-/* header */
-.drawer-header {
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-}
-
-.drawer-header h3 {
-  margin: 0;
-}
-
-/* body (scroll here) */
-.drawer-body {
-  flex: 1;                       /* 🔑 takes remaining space */
-  padding: 16px;
-  overflow-y: auto;              /* 🔑 scroll inside drawer */
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.drawer-body input,
-.drawer-body select {
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-/* footer */
+.drawer-header,
 .drawer-footer {
-  padding: 16px;
-  border-top: 1px solid #eee;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(23, 50, 77, 0.08);
+}
+
+.drawer-footer {
+  border-top: 1px solid rgba(23, 50, 77, 0.08);
+  border-bottom: 0;
   justify-content: flex-end;
-  gap: 10px;
 }
 
-.cancel-btn {
-  padding: 8px 14px;
-  border: 1px solid #ccc;
-  background: #f5f5f5;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.save-btn {
-  padding: 8px 14px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+.drawer-body {
+  flex: 1;
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  overflow-y: auto;
 }

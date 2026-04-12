@@ -46,8 +46,15 @@ def run_migrations_online():
         # fallback to sync-style (for alembic commands that expect sync URL)
         url = config.get_main_option("sqlalchemy.url")
         connectable = create_async_engine(url)
-        with connectable.connect() as connection:
-            do_run_migrations(connection)
+        # Use async context manager for async connections
+        async with connectable.connect() as connection:
+            await connection.run_sync(do_run_migrations)
+
+    # For sync operations, use regular context manager
+    url = config.get_main_option("sqlalchemy.url")
+    connectable = create_async_engine(url)
+    with connectable.connect() as connection:
+        do_run_migrations(connection)
 
 if context.is_offline_mode():
     run_migrations_offline()

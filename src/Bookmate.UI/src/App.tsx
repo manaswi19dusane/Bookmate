@@ -9,6 +9,12 @@ import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import Preferences from "./Pages/Preferences";
 import Interactions from "./Pages/Interactions";
+import Recommendations from "./Pages/Recommendations";
+import Library from "./Pages/Library";
+import Institution from "./Pages/Institution";
+import Club from "./Pages/Club";
+import Community from "./Pages/Community";
+import Marketplace from "./Pages/Marketplace";
 import { User } from "./Api/auth";
 
 const PrivateRoute = ({ children }: { children: ReactNode }) => {
@@ -91,6 +97,72 @@ const AppWrapper = () => {
           <PrivateRoute>
             <Layout>
               <Wishlist />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/library"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Library />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/recommendations"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Recommendations />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/institution"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Institution />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/club"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Club />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/community"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Community />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/marketplace"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Marketplace />
             </Layout>
           </PrivateRoute>
         }

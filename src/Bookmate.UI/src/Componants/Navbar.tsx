@@ -54,9 +54,13 @@ export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
 
       {/* RIGHT SECTION */}
       <div className="nav-right">
-        <Link to="/wishlist">Wishlist</Link>
+        <Link to="/library">Library</Link>
+        <Link to="/institution">Institution</Link>
+        <Link to="/club">Club</Link>
+        <Link to="/community">Community</Link>
+        <Link to="/marketplace">Marketplace</Link>
+        <Link to="/recommendations">Recommendations</Link>
         <Link to="/preferences">Preferences</Link>
-        <Link to="/interactions">Interactions</Link>
         {authenticated ? (
           <button className="nav-button" onClick={handleLogout}>
             Logout

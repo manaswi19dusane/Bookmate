@@ -22,7 +22,7 @@ async def get_user_library(
     current_user = Depends(get_current_user)
 ):
     service = LibraryService(db)
-    items = await service.list_user_library(current_user.id, status)
+    items = await service.list_user_library(current_user.id.value, status)
     return [
         {
             "id": item.id.value,
@@ -44,7 +44,7 @@ async def add_book_to_library(
 ):
     service = LibraryService(db)
     try:
-        item = await service.add_to_library(current_user.id, book_id, status)
+        item = await service.add_to_library(current_user.id.value, book_id, status)
         return {
             "id": item.id.value,
             "book_id": item.book_id,

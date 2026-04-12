@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import date, datetime
 
@@ -11,6 +11,7 @@ class CreateBookRequest(BaseModel):
     purchased_date: Optional[date] = None
 
 class BookResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     title: str
     author: str
@@ -40,6 +41,7 @@ class LoginRequest(BaseModel):
 
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     email: str
     created_at: datetime
@@ -58,6 +60,7 @@ class UserPreferenceRequest(BaseModel):
 
 
 class UserPreferenceResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     genre: str
     author: str
@@ -72,6 +75,7 @@ class UserInteractionRequest(BaseModel):
 
 
 class UserInteractionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     book_id: str
     interaction_type: str
@@ -82,30 +86,30 @@ class UserInteractionResponse(BaseModel):
 class InstitutionCreate(BaseModel):
     name: str
     type: str
-    description: Optional[str] = None
-    is_public: bool = True
-    created_by: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    address: Optional[str] = None
+    website: Optional[str] = None
+    contact_email: Optional[str] = None
+    is_verified: bool = False
 
 
 class InstitutionUpdate(BaseModel):
     name: Optional[str] = None
-    description: Optional[str] = None
     type: Optional[str] = None
-    is_public: Optional[bool] = None
-    updated_at: Optional[datetime] = None
+    address: Optional[str] = None
+    website: Optional[str] = None
+    contact_email: Optional[str] = None
+    is_verified: Optional[bool] = None
 
 
 class InstitutionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     name: str
     type: str
-    description: Optional[str] = None
-    is_public: bool
-    created_by: Optional[str] = None
+    address: Optional[str] = None
+    website: Optional[str] = None
+    contact_email: Optional[str] = None
     created_at: datetime
-    updated_at: Optional[datetime] = None
     is_verified: bool = False
 
 
@@ -127,6 +131,7 @@ class CorporateClubUpdate(BaseModel):
 
 
 class CorporateClubResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     name: str
     organization_name: str
@@ -153,6 +158,7 @@ class CommunityGroupUpdate(BaseModel):
 
 
 class CommunityGroupResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     name: str
     creator_user_id: str
@@ -178,6 +184,7 @@ class MarketplaceUpdate(BaseModel):
 
 
 class MarketplaceResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     book_id: str
     seller_user_id: str
@@ -205,6 +212,7 @@ class LibraryUpdate(BaseModel):
 
 
 class LibraryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     user_id: str
     book_id: str

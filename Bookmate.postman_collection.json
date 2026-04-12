@@ -1,179 +1,638 @@
 {
-	"info": {
-		"_postman_id": "a915b2b7-c68b-46e3-865c-38c4440cce9d",
-		"name": "Bookmate",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "7937275"
-	},
-	"item": [
-		{
-			"name": "GetAllBooks",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "accept",
-						"value": "application/json"
-					}
-				],
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/books",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"books"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GetBookById",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "accept",
-						"value": "application/json"
-					}
-				],
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/books/7be7ba08-4db5-4165-a548-d8bf2259f34e",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"books",
-						"7be7ba08-4db5-4165-a548-d8bf2259f34e"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Insert Book",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "accept",
-						"value": "application/json"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "\n  {    \n    \"title\": \"Test Book1\",\n    \"author\": \"OneSolve\",\n    \"language\": \"english\",\n    \"published_date\": \"2025-11-29\",\n    \"image_url\": \"http://\",\n    \"purchased_date\": \"2025-11-29\"\n  }\n",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/books",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"books"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update Book",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "accept",
-						"value": "application/json"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{    \n    \"title\": \"Test Book1223\",\n    \"author\": \"OneSolve\",\n    \"language\": \"english\",\n    \"published_date\": \"2025-11-29\",\n    \"image_url\": \"http://\",\n    \"purchased_date\": \"2025-11-29\"\n  }",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/books/31c0f5d5-5c32-4e5a",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"books",
-						"31c0f5d5-5c32-4e5a"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "accept",
-						"value": "*/*"
-					}
-				],
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/books/31c0f5d5-5c32-4e5a-9899-735c712c38e5",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"books",
-						"31c0f5d5-5c32-4e5a-9899-735c712c38e5"
-					]
-				}
-			},
-			"response": []
-		}
-	]
+  "info": {
+    "_postman_id": "65ef32aa-2d12-4eb7-8a31-6d75a09d6c4b",
+    "name": "Bookmate",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Complete Bookmate backend collection with auth, books, library, AI chat, marketplace, institutions, corporate clubs, and community groups."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "bookId", "value": "" },
+    { "key": "libraryId", "value": "" },
+    { "key": "institutionId", "value": "" },
+    { "key": "corporateClubId", "value": "" },
+    { "key": "communityGroupId", "value": "" },
+    { "key": "marketplaceId", "value": "" },
+    { "key": "registerEmail", "value": "postman.user@example.com" },
+    { "key": "registerPassword", "value": "Validator123!" },
+    { "key": "seedUserEmail", "value": "john.doe@example.com" },
+    { "key": "seedUserPassword", "value": "SecurePass123!" }
+  ],
+  "item": [
+    {
+      "name": "Auth and Users",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{registerEmail}}\",\n  \"password\": \"{{registerPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/register"
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('token', data.access_token);",
+                  "pm.collectionVariables.set('userId', data.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{registerEmail}}\",\n  \"password\": \"{{registerPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/login"
+          }
+        },
+        {
+          "name": "Login Seeded User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('token', data.access_token);",
+                  "pm.collectionVariables.set('userId', data.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{seedUserEmail}}\",\n  \"password\": \"{{seedUserPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/login"
+          }
+        },
+        {
+          "name": "List Preferences",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/preferences"
+          }
+        },
+        {
+          "name": "Create Preference",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"genre\": \"Mystery\",\n  \"author\": \"Agatha Christie\",\n  \"book_id\": \"{{bookId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/preferences"
+          }
+        },
+        {
+          "name": "List Interactions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/interactions"
+          }
+        },
+        {
+          "name": "Create Interaction",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"book_id\": \"{{bookId}}\",\n  \"interaction_type\": \"rating\",\n  \"rating\": 5\n}"
+            },
+            "url": "{{baseUrl}}/api/interactions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "List Books",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/books"
+          }
+        },
+        {
+          "name": "Create Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('bookId', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman Book\",\n  \"author\": \"Collection Runner\",\n  \"language\": \"English\",\n  \"published_date\": \"2024-01-01\",\n  \"image_url\": \"https://example.com/postman-book.jpg\",\n  \"purchased_date\": \"2024-02-01\"\n}"
+            },
+            "url": "{{baseUrl}}/api/books"
+          }
+        },
+        {
+          "name": "Bulk Create Books",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"title\": \"Bulk Book One\",\n    \"author\": \"Collection Runner\",\n    \"language\": \"English\",\n    \"published_date\": \"2023-01-01\",\n    \"image_url\": \"https://example.com/bulk-one.jpg\",\n    \"purchased_date\": \"2023-02-01\"\n  },\n  {\n    \"title\": \"Bulk Book Two\",\n    \"author\": \"Collection Runner\",\n    \"language\": \"English\",\n    \"published_date\": \"2023-03-01\",\n    \"image_url\": \"https://example.com/bulk-two.jpg\",\n    \"purchased_date\": \"2023-04-01\"\n  }\n]"
+            },
+            "url": "{{baseUrl}}/api/books/bulk"
+          }
+        },
+        {
+          "name": "Get Book",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Update Book",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman Book Updated\",\n  \"author\": \"Collection Runner\",\n  \"language\": \"English\",\n  \"published_date\": \"2024-01-05\",\n  \"image_url\": \"https://example.com/postman-book-updated.jpg\",\n  \"purchased_date\": \"2024-02-05\"\n}"
+            },
+            "url": "{{baseUrl}}/api/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Patch Book",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman Book Patched\",\n  \"author\": \"Collection Runner\",\n  \"language\": \"English\",\n  \"published_date\": \"2024-01-10\",\n  \"image_url\": \"https://example.com/postman-book-patched.jpg\",\n  \"purchased_date\": \"2024-02-10\"\n}"
+            },
+            "url": "{{baseUrl}}/api/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "List Available Books",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/books/available"
+          }
+        },
+        {
+          "name": "Delete Book",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/books/{{bookId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Library",
+      "item": [
+        {
+          "name": "List Library",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/library/"
+          }
+        },
+        {
+          "name": "Add Book To Library",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('libraryId', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/library/?book_id={{bookId}}&status=reading",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library", ""],
+              "query": [
+                { "key": "book_id", "value": "{{bookId}}" },
+                { "key": "status", "value": "reading" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Library Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/library/{{libraryId}}/status?status=completed",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library", "{{libraryId}}", "status"],
+              "query": [
+                { "key": "status", "value": "completed" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Library Item",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/library/{{libraryId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Chat",
+      "item": [
+        {
+          "name": "Chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Recommend one classic book for a new reader\"\n}"
+            },
+            "url": "{{baseUrl}}/api/ai/chat"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Institutions",
+      "item": [
+        {
+          "name": "List Institutions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/institutions?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Create Institution",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('institutionId', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Institution\",\n  \"type\": \"organization\",\n  \"address\": \"Pune, India\",\n  \"website\": \"https://example.org/institution\",\n  \"contact_email\": \"library@example.org\",\n  \"is_verified\": false\n}"
+            },
+            "url": "{{baseUrl}}/institutions"
+          }
+        },
+        {
+          "name": "Get Institution",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/institutions/{{institutionId}}"
+          }
+        },
+        {
+          "name": "Update Institution",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"Mumbai, India\",\n  \"is_verified\": true\n}"
+            },
+            "url": "{{baseUrl}}/institutions/{{institutionId}}"
+          }
+        },
+        {
+          "name": "Delete Institution",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/institutions/{{institutionId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Corporate Clubs",
+      "item": [
+        {
+          "name": "List Corporate Clubs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/corporate-clubs?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Create Corporate Club",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('corporateClubId', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Corporate Club\",\n  \"organization_name\": \"Bookmate QA\",\n  \"admin_user_id\": \"{{userId}}\",\n  \"description\": \"Corporate club created from Postman\",\n  \"max_members\": 25,\n  \"is_active\": true\n}"
+            },
+            "url": "{{baseUrl}}/corporate-clubs"
+          }
+        },
+        {
+          "name": "Get Corporate Club",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/corporate-clubs/{{corporateClubId}}"
+          }
+        },
+        {
+          "name": "Update Corporate Club",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Corporate club updated from Postman\",\n  \"is_active\": false\n}"
+            },
+            "url": "{{baseUrl}}/corporate-clubs/{{corporateClubId}}"
+          }
+        },
+        {
+          "name": "Delete Corporate Club",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/corporate-clubs/{{corporateClubId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Community Groups",
+      "item": [
+        {
+          "name": "List Community Groups",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/community-groups?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Create Community Group",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('communityGroupId', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Community Group\",\n  \"creator_user_id\": \"{{userId}}\",\n  \"topic\": \"testing\",\n  \"description\": \"Community group created from Postman\",\n  \"is_public\": true\n}"
+            },
+            "url": "{{baseUrl}}/community-groups"
+          }
+        },
+        {
+          "name": "Get Community Group",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/community-groups/{{communityGroupId}}"
+          }
+        },
+        {
+          "name": "Update Community Group",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Community group updated from Postman\",\n  \"is_public\": false\n}"
+            },
+            "url": "{{baseUrl}}/community-groups/{{communityGroupId}}"
+          }
+        },
+        {
+          "name": "Delete Community Group",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/community-groups/{{communityGroupId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marketplaces",
+      "item": [
+        {
+          "name": "List Marketplaces",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/marketplaces?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Create Marketplace Listing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('marketplaceId', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"book_id\": \"{{bookId}}\",\n  \"seller_user_id\": \"{{userId}}\",\n  \"price\": 14.99,\n  \"condition\": \"Like New\",\n  \"description\": \"Marketplace listing created from Postman\"\n}"
+            },
+            "url": "{{baseUrl}}/marketplaces"
+          }
+        },
+        {
+          "name": "Get Marketplace Listing",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/marketplaces/{{marketplaceId}}"
+          }
+        },
+        {
+          "name": "Update Marketplace Listing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 12.49,\n  \"condition\": \"Good\",\n  \"description\": \"Updated from Postman\",\n  \"is_available\": false\n}"
+            },
+            "url": "{{baseUrl}}/marketplaces/{{marketplaceId}}"
+          }
+        },
+        {
+          "name": "Delete Marketplace Listing",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/marketplaces/{{marketplaceId}}"
+          }
+        }
+      ]
+    }
+  ]
 }

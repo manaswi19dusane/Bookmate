@@ -16,6 +16,7 @@ class UserPreferenceORM(SQLModel, table=True):
     genre: str
     author: str
     created_at: datetime
+    book_id: Optional[str] = None
 
 
 class UserInteractionORM(SQLModel, table=True):

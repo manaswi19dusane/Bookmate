@@ -1,106 +1,106 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 from typing import List
+from uuid import uuid4
 
-from app.config import get_settings
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.infrastructure.Mappers.extended_orm import CommunityGroupORM
+from app.infrastructure.Mappers.user_orm import UserORM
 from app.infrastructure.db import async_session
-from app.infrastructure.repositories.interfaces import CommunityGroupRepository
-from app.application.services.community_group_service import CommunityGroupService
-from app.application.usecases import (
-    CreateCommunityGroup,
-    ListCommunityGroups,
-    GetCommunityGroup,
-    UpdateCommunityGroup,
-    DeleteCommunityGroup
-)
 from app.interfaces.schemas import (
     CommunityGroupCreate,
     CommunityGroupResponse,
-    CommunityGroupUpdate
+    CommunityGroupUpdate,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["community-groups"])
 
-async def get_community_group_service(session: AsyncSession = Depends(async_session)) -> CommunityGroupService:
-    return CommunityGroupService(CommunityGroupRepository(session))
+
+async def get_session():
+    async with async_session() as session:
+        yield session
+
 
 @router.post("/community-groups", response_model=CommunityGroupResponse, status_code=status.HTTP_201_CREATED)
-async def create_community_group(community_group_create: CommunityGroupCreate, community_group_service: CommunityGroupService = Depends(get_community_group_service)):
-    create_group = CreateCommunityGroup(
-        name=community_group_create.name,
-        description=community_group_create.description,
-        category=community_group_create.category,
-        is_public=community_group_create.is_public,
-        created_by=community_group_create.created_by,
-        created_at=community_group_create.created_at,
-        updated_at=community_group_create.updated_at
-    )
-    community_group = await community_group_service.create_community_group(create_group)
-    return CommunityGroupResponse(
-        id=community_group.id.value,
-        name=community_group.name,
-        description=community_group.description,
-        category=community_group.category,
-        is_public=community_group.is_public,
-        created_by=community_group.created_by,
-        created_at=community_group.created_at,
-        updated_at=community_group.updated_at
-    )
+async def create_community_group(
+    payload: CommunityGroupCreate,
+    session: AsyncSession = Depends(get_session),
+):
+    creator = await session.get(UserORM, payload.creator_user_id)
+    if creator is None:
+        raise HTTPException(status_code=400, detail="creator_user_id does not exist")
 
-@router.get("/community-groups/{group_id}", response_model=CommunityGroupResponse)
-async def get_community_group(group_id: str, community_group_service: CommunityGroupService = Depends(get_community_group_service)):
-    community_group = await community_group_service.get_community_group(group_id)
-    if community_group is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Community group not found")
-    return CommunityGroupResponse(
-        id=community_group.id.value,
-        name=community_group.name,
-        description=community_group.description,
-        category=community_group.category,
-        is_public=community_group.is_public,
-        created_by=community_group.created_by,
-        created_at=community_group.created_at,
-        updated_at=community_group.updated_at
+    group = CommunityGroupORM(
+        id=str(uuid4()),
+        name=payload.name,
+        creator_user_id=payload.creator_user_id,
+        topic=payload.topic,
+        description=payload.description,
+        created_at=datetime.utcnow(),
+        is_public=payload.is_public,
     )
+    session.add(group)
+    await session.commit()
+    await session.refresh(group)
+    return group
+
 
 @router.get("/community-groups", response_model=List[CommunityGroupResponse])
-async def list_community_groups(page: int = 1, limit: int = 10, community_group_service: CommunityGroupService = Depends(get_community_group_service)):
-    community_groups = await community_group_service.list_community_groups(page=page, limit=limit)
-    return [
-        CommunityGroupResponse(
-            id=group.id.value,
-            name=group.name,
-            description=group.description,
-            category=group.category,
-            is_public=group.is_public,
-            created_by=group.created_by,
-            created_at=group.created_at,
-            updated_at=group.updated_at
-        )
-        for group in community_groups
-    ]
+async def list_community_groups(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    session: AsyncSession = Depends(get_session),
+):
+    stmt = (
+        select(CommunityGroupORM)
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .order_by(CommunityGroupORM.created_at.desc())
+    )
+    result = await session.exec(stmt)
+    return result.all()
+
+
+@router.get("/community-groups/{group_id}", response_model=CommunityGroupResponse)
+async def get_community_group(
+    group_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    group = await session.get(CommunityGroupORM, group_id)
+    if group is None:
+        raise HTTPException(status_code=404, detail="Community group not found")
+    return group
+
 
 @router.put("/community-groups/{group_id}", response_model=CommunityGroupResponse)
-async def update_community_group(group_id: str, community_group_update: CommunityGroupUpdate, community_group_service: CommunityGroupService = Depends(get_community_group_service)):
-    update_group = UpdateCommunityGroup(
-        name=community_group_update.name,
-        description=community_group_update.description,
-        category=community_group_update.category,
-        is_public=community_group_update.is_public,
-        updated_at=community_group_update.updated_at
-    )
-    community_group = await community_group_service.update_community_group(group_id, update_group)
-    return CommunityGroupResponse(
-        id=community_group.id.value,
-        name=community_group.name,
-        description=community_group.description,
-        category=community_group.category,
-        is_public=community_group.is_public,
-        created_by=community_group.created_by,
-        created_at=community_group.created_at,
-        updated_at=community_group.updated_at
-    )
+async def update_community_group(
+    group_id: str,
+    payload: CommunityGroupUpdate,
+    session: AsyncSession = Depends(get_session),
+):
+    group = await session.get(CommunityGroupORM, group_id)
+    if group is None:
+        raise HTTPException(status_code=404, detail="Community group not found")
+
+    updates = payload.model_dump(exclude_unset=True)
+    for field, value in updates.items():
+        setattr(group, field, value)
+
+    session.add(group)
+    await session.commit()
+    await session.refresh(group)
+    return group
+
 
 @router.delete("/community-groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_community_group(group_id: str, community_group_service: CommunityGroupService = Depends(get_community_group_service)):
-    result
+async def delete_community_group(
+    group_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    group = await session.get(CommunityGroupORM, group_id)
+    if group is None:
+        raise HTTPException(status_code=404, detail="Community group not found")
+    await session.delete(group)
+    await session.commit()

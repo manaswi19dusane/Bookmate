@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.config import settings
-from app.infrastructure.db import init_db, get_db
+from app.infrastructure.db import init_db
 from app.infrastructure.seed.seed_data import run_seed, is_sample_data_loaded
 from app.interfaces.api_v1.books import router as books_router
 from app.interfaces.api_v1.ai import router as ai_router
@@ -11,6 +11,8 @@ from app.interfaces.api_v1.corporate_clubs import router as corporate_clubs_rout
 from app.interfaces.api_v1.community_groups import router as community_groups_router
 from app.interfaces.api_v1.marketplaces import router as marketplaces_router
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -30,33 +32,22 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def on_startup():
-    # create tables (if not using migrations yet)
     await init_db()
-    
-    # Seed sample data if enabled
     if settings.ENABLE_SAMPLE_DATA:
-        import asyncio
-        from sqlalchemy import create_engine
-        from app.infrastructure.seed.seed_data import run_seed, is_sample_data_loaded
-        
-        # Use sync engine for seeding (since seed functions are sync)
         sync_url = settings.DATABASE_URL.replace("sqlite+aiosqlite:///", "sqlite:///")
-        sync_engine = create_engine(sync_url)
-        
-        # Create Session for ORM operations
-        from sqlalchemy.orm import sessionmaker
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
-        
-        db = SessionLocal()
+        sync_engine = create_engine(sync_url, future=True)
+        session_factory = sessionmaker(bind=sync_engine, autocommit=False, autoflush=False)
+        db = session_factory()
         try:
             if not is_sample_data_loaded(db):
                 run_seed(db)
         finally:
             db.close()
+            sync_engine.dispose()
 
+app.include_router(users_router)
 app.include_router(books_router, prefix="/api")
 app.include_router(ai_router)
-app.include_router(users_router)
 app.include_router(libraries_router)
 app.include_router(institutions_router)
 app.include_router(corporate_clubs_router)

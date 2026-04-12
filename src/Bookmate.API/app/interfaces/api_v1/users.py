@@ -18,9 +18,13 @@ from app.infrastructure.repositories.user_repo import UserRepository
 from app.application.services.auth_service import AuthService
 from app.application.services.auth_dependency import get_current_user
 from app.domain.exceptions import UserAlreadyExists, UserNotFound
-from app.domain.models_user import User, UserPreference, UserPreferenceId, UserInteraction
-
-
+from app.domain.models_user import (
+    User,
+    UserInteraction,
+    UserInteractionId,
+    UserPreference,
+    UserPreferenceId,
+)
 router = APIRouter(prefix="/api", tags=["users"])
 
 
@@ -68,6 +72,7 @@ async def list_preferences(
             "id": preference.id.value,
             "genre": preference.genre,
             "author": preference.author,
+            "book_id": preference.book_id,
             "created_at": preference.created_at,
         }
         for preference in preferences
@@ -124,33 +129,6 @@ async def list_interactions(
         for interaction in interactions
     ]
 
-
-@router.get("/books/available", response_model=List[dict])
-async def list_available_books(
-    current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
-):
-    repo = UserRepository(session)
-    # Get books that the user hasn't interacted with yet
-    stmt = select(BookORM).where(~BookORM.id.in_(
-        select(UserInteractionORM.book_id).where(UserInteractionORM.user_id == current_user.id.value)
-    ))
-    result = await session.execute(stmt)
-    books = result.scalars().all()
-    return [
-        {
-            "id": book.id,
-            "title": book.title,
-            "author": book.author,
-            "language": book.language,
-            "published_date": book.published_date,
-            "image_url": book.image_url,
-            "purchased_date": book.purchased_date,
-        }
-        for book in books
-    ]
-
-
 @router.post("/interactions", response_model=UserInteractionResponse, status_code=status.HTTP_201_CREATED)
 async def create_interaction(
     payload: UserInteractionRequest,
@@ -159,7 +137,7 @@ async def create_interaction(
 ):
     repo = UserRepository(session)
     interaction = UserInteraction(
-        id=UserInteraction.new(),
+        id=UserInteractionId.new(),
         user_id=current_user.id.value,
         book_id=payload.book_id,
         interaction_type=payload.interaction_type,

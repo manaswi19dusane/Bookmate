@@ -1,108 +1,110 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 from typing import List
+from uuid import uuid4
 
-from app.config import get_settings
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.infrastructure.Mappers.book_orm import BookORM
+from app.infrastructure.Mappers.extended_orm import MarketplaceORM
+from app.infrastructure.Mappers.user_orm import UserORM
 from app.infrastructure.db import async_session
-from app.infrastructure.repositories.interfaces import MarketplaceRepository
-from app.application.services.marketplace_service import MarketplaceService
-from app.application.usecases import (
-    CreateMarketplace,
-    ListMarketplaces,
-    GetMarketplace,
-    UpdateMarketplace,
-    DeleteMarketplace
-)
-from app.interfaces.schemas import (
-    MarketplaceCreate,
-    MarketplaceResponse,
-    MarketplaceUpdate
-)
+from app.interfaces.schemas import MarketplaceCreate, MarketplaceResponse, MarketplaceUpdate
 
-router = APIRouter()
+router = APIRouter(tags=["marketplaces"])
 
-async def get_marketplace_service(session: AsyncSession = Depends(async_session)) -> MarketplaceService:
-    return MarketplaceService(MarketplaceRepository(session))
+
+async def get_session():
+    async with async_session() as session:
+        yield session
+
 
 @router.post("/marketplaces", response_model=MarketplaceResponse, status_code=status.HTTP_201_CREATED)
-async def create_marketplace(marketplace_create: MarketplaceCreate, marketplace_service: MarketplaceService = Depends(get_marketplace_service)):
-    create_marketplace = CreateMarketplace(
-        name=marketplace_create.name,
-        description=marketplace_create.description,
-        category=marketplace_create.category,
-        is_public=marketplace_create.is_public,
-        created_by=marketplace_create.created_by,
-        created_at=marketplace_create.created_at,
-        updated_at=marketplace_create.updated_at
-    )
-    marketplace = await marketplace_service.create_marketplace(create_marketplace)
-    return MarketplaceResponse(
-        id=marketplace.id.value,
-        name=marketplace.name,
-        description=marketplace.description,
-        category=marketplace.category,
-        is_public=marketplace.is_public,
-        created_by=marketplace.created_by,
-        created_at=marketplace.created_at,
-        updated_at=marketplace.updated_at
-    )
+async def create_marketplace(
+    payload: MarketplaceCreate,
+    session: AsyncSession = Depends(get_session),
+):
+    seller = await session.get(UserORM, payload.seller_user_id)
+    book = await session.get(BookORM, payload.book_id)
+    if seller is None:
+        raise HTTPException(status_code=400, detail="seller_user_id does not exist")
+    if book is None:
+        raise HTTPException(status_code=400, detail="book_id does not exist")
 
-@router.get("/marketplaces/{marketplace_id}", response_model=MarketplaceResponse)
-async def get_marketplace(marketplace_id: str, marketplace_service: MarketplaceService = Depends(get_marketplace_service)):
-    marketplace = await marketplace_service.get_marketplace(marketplace_id)
-    if marketplace is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Marketplace not found")
-    return MarketplaceResponse(
-        id=marketplace.id.value,
-        name=marketplace.name,
-        description=marketplace.description,
-        category=marketplace.category,
-        is_public=marketplace.is_public,
-        created_by=marketplace.created_by,
-        created_at=marketplace.created_at,
-        updated_at=marketplace.updated_at
+    item = MarketplaceORM(
+        id=str(uuid4()),
+        book_id=payload.book_id,
+        seller_user_id=payload.seller_user_id,
+        price=payload.price,
+        condition=payload.condition,
+        description=payload.description,
+        listed_at=datetime.utcnow(),
+        is_available=True,
     )
+    session.add(item)
+    await session.commit()
+    await session.refresh(item)
+    return item
+
 
 @router.get("/marketplaces", response_model=List[MarketplaceResponse])
-async def list_marketplaces(page: int = 1, limit: int = 10, marketplace_service: MarketplaceService = Depends(get_marketplace_service)):
-    marketplaces = await marketplace_service.list_marketplaces(page=page, limit=limit)
-    return [
-        MarketplaceResponse(
-            id=marketplace.id.value,
-            name=marketplace.name,
-            description=marketplace.description,
-            category=marketplace.category,
-            is_public=marketplace.is_public,
-            created_by=marketplace.created_by,
-            created_at=marketplace.created_at,
-            updated_at=marketplace.updated_at
-        )
-        for marketplace in marketplaces
-    ]
+async def list_marketplaces(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    session: AsyncSession = Depends(get_session),
+):
+    stmt = (
+        select(MarketplaceORM)
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .order_by(MarketplaceORM.listed_at.desc())
+    )
+    result = await session.exec(stmt)
+    return result.all()
+
+
+@router.get("/marketplaces/{marketplace_id}", response_model=MarketplaceResponse)
+async def get_marketplace(
+    marketplace_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    item = await session.get(MarketplaceORM, marketplace_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Marketplace not found")
+    return item
+
 
 @router.put("/marketplaces/{marketplace_id}", response_model=MarketplaceResponse)
-async def update_marketplace(marketplace_id: str, marketplace_update: MarketplaceUpdate, marketplace_service: MarketplaceService = Depends(get_marketplace_service)):
-    update_marketplace = UpdateMarketplace(
-        name=marketplace_update.name,
-        description=marketplace_update.description,
-        category=marketplace_update.category,
-        is_public=marketplace_update.is_public,
-        updated_at=marketplace_update.updated_at
-    )
-    marketplace = await marketplace_service.update_marketplace(marketplace_id, update_marketplace)
-    return MarketplaceResponse(
-        id=marketplace.id.value,
-        name=marketplace.name,
-        description=marketplace.description,
-        category=marketplace.category,
-        is_public=marketplace.is_public,
-        created_by=marketplace.created_by,
-        created_at=marketplace.created_at,
-        updated_at=marketplace.updated_at
-    )
+async def update_marketplace(
+    marketplace_id: str,
+    payload: MarketplaceUpdate,
+    session: AsyncSession = Depends(get_session),
+):
+    item = await session.get(MarketplaceORM, marketplace_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Marketplace not found")
+
+    updates = payload.model_dump(exclude_unset=True)
+    for field, value in updates.items():
+        setattr(item, field, value)
+
+    if item.is_available is False and item.sold_at is None:
+        item.sold_at = datetime.utcnow()
+
+    session.add(item)
+    await session.commit()
+    await session.refresh(item)
+    return item
+
 
 @router.delete("/marketplaces/{marketplace_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_marketplace(marketplace_id: str, marketplace_service: MarketplaceService = Depends(get_marketplace_service)):
-    result = await marketplace_service.delete_marketplace(marketplace_id)
-    if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Marketplace not found")
+async def delete_marketplace(
+    marketplace_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    item = await session.get(MarketplaceORM, marketplace_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Marketplace not found")
+    await session.delete(item)
+    await session.commit()

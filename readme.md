@@ -178,6 +178,30 @@ Bookmate/
 4. **Open the application**:
    - http://localhost:5173/
 
+## 👤 User Guide
+
+Bookmate is now easiest to use with this flow:
+
+1. Register or log in.
+2. Add your first book from the `Add Book` page.
+3. Open `Library` and add the book to `reading`, `completed`, or `wishlist`.
+4. Save at least one entry in `Preferences`.
+5. Record a rating, like, view, or purchase in `Activity`.
+6. Open `Recommendations` to see personalized suggestions.
+
+### In-App Guidance
+
+- The home page now includes a quick-start checklist and workspace summary.
+- A dedicated `User Guide` page explains the best first-time workflow.
+- Empty states across the app now include direct next-step actions so new users do not get stuck.
+
+### What Makes The App More Ready To Use
+
+- Clear first-run navigation for new users
+- Faster discovery of core actions like add, track, and recommend
+- Better guidance when pages have no data yet
+- Easier handoff for demos, classmates, or non-technical users
+
 ## 📡 API Endpoints
 
 ### Books

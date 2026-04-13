@@ -69,6 +69,9 @@ export default function Login() {
         <p className="auth-switch">
           Need an account? <Link to="/register">Create one</Link>
         </p>
+        <p className="auth-switch">
+          First time here? <Link to="/guide">Read the user guide</Link>
+        </p>
       </form>
     </div>
   );

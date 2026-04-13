@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { booksApi, interactionsApi, type Book, type UserInteraction } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -55,6 +56,17 @@ export default function Interactions() {
         <p>Record views, likes, ratings, and purchases through the existing backend API.</p>
       </div>
 
+      <div className="inline-tip">
+        <strong>Helpful pattern</strong>
+        <p>
+          Record at least one rating or like after adding books to your library. That gives Bookmate
+          more signal for future recommendations.
+        </p>
+        <Link to="/library" className="secondary-button">
+          Open library
+        </Link>
+      </div>
+
       <div className="split-layout">
         <form className="form-card" onSubmit={handleSubmit}>
           <label>
@@ -105,6 +117,11 @@ export default function Interactions() {
             <div className="empty-panel">
               <h3>No interactions recorded</h3>
               <p>Track a few actions to build your activity feed.</p>
+              <div className="hero-actions centered-actions">
+                <Link to="/guide" className="secondary-button">
+                  Read quick start
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="stack-list">

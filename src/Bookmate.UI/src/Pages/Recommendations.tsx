@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import BookCard from "../Componants/BookCard";
 import { booksApi, interactionsApi, preferencesApi, type Book, type UserInteraction, type UserPreference } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -59,6 +60,22 @@ export default function Recommendations() {
         <p>This view combines existing backend data from available books, preferences, and interactions.</p>
       </div>
 
+      <div className="inline-tip">
+        <strong>How to get better suggestions</strong>
+        <p>
+          Recommendations improve when you save preferences and record interactions. If this page
+          feels empty, complete those two setup steps first.
+        </p>
+        <div className="hero-actions">
+          <Link to="/preferences" className="secondary-button">
+            Add preferences
+          </Link>
+          <Link to="/interactions" className="secondary-button">
+            Track activity
+          </Link>
+        </div>
+      </div>
+
       {loading ? (
         <p className="page-status">Building recommendations...</p>
       ) : error ? (
@@ -67,6 +84,14 @@ export default function Recommendations() {
         <div className="empty-panel">
           <h3>No recommendations yet</h3>
           <p>Add preferences and interactions to help the UI rank books for you.</p>
+          <div className="hero-actions centered-actions">
+            <Link to="/preferences" className="primary-button">
+              Start with preferences
+            </Link>
+            <Link to="/guide" className="secondary-button">
+              Read the guide
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="card-grid">

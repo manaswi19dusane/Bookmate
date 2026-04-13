@@ -16,6 +16,7 @@ import Club from "./Pages/Club";
 import Community from "./Pages/Community";
 import Marketplace from "./Pages/Marketplace";
 import BookDetail from "./Componants/BookDetail";
+import UserGuide from "./Pages/UserGuide";
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -46,6 +47,7 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
+      <Route path="/guide" element={<UserGuide />} />
       {[
         { path: "/", element: <Home /> },
         { path: "/add", element: <AddBook /> },

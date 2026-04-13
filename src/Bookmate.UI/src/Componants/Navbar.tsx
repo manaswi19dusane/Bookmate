@@ -61,6 +61,7 @@ export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
         <Link to="/marketplace">Marketplace</Link>
         <Link to="/recommendations">Recommendations</Link>
         <Link to="/preferences">Preferences</Link>
+        <Link to="/guide">Guide</Link>
         {authenticated ? (
           <button className="nav-button" onClick={handleLogout}>
             Logout

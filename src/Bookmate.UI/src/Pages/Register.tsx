@@ -93,6 +93,9 @@ export default function Register() {
         <p className="auth-switch">
           Already registered? <Link to="/login">Sign in</Link>
         </p>
+        <p className="auth-switch">
+          Want the setup steps first? <Link to="/guide">Open the user guide</Link>
+        </p>
       </form>
     </div>
   );

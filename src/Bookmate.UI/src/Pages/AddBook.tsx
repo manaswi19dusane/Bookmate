@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { booksApi } from "../services/api";
 
 export default function AddBook() {
@@ -46,6 +46,17 @@ export default function AddBook() {
         <p className="page-eyebrow">Books</p>
         <h1>Add a new book</h1>
         <p>Create a real book entry using the existing backend API.</p>
+      </div>
+
+      <div className="inline-tip">
+        <strong>Best results for first-time users</strong>
+        <p>
+          Start with title, author, language, and an optional cover image. Once the book is saved,
+          you can add it to your library and begin tracking activity.
+        </p>
+        <Link to="/guide" className="secondary-button">
+          View guide
+        </Link>
       </div>
 
       <form className="form-card" onSubmit={handleSubmit}>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import BookCard from "../Componants/BookCard";
 import { booksApi, libraryApi, type Book, type LibraryItem } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -93,6 +94,17 @@ export default function Library() {
         <p>Keep reading, completed, and wishlist items in sync with the live backend.</p>
       </div>
 
+      <div className="inline-tip">
+        <strong>Ready-to-use workflow</strong>
+        <p>
+          Use this page as your main reading tracker. Add a book here, mark it as completed later,
+          and keep wishlist items separate from books you are actively reading.
+        </p>
+        <Link to="/recommendations" className="secondary-button">
+          See recommendations
+        </Link>
+      </div>
+
       <div className="toolbar">
         <div className="toolbar-tabs">
           {["all", "reading", "completed", "wishlist"].map((value) => (
@@ -134,6 +146,14 @@ export default function Library() {
         <div className="empty-panel">
           <h3>Your library is empty</h3>
           <p>Add a book above to start tracking your reading.</p>
+          <div className="hero-actions centered-actions">
+            <Link to="/add" className="primary-button">
+              Create a book
+            </Link>
+            <Link to="/guide" className="secondary-button">
+              Open guide
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="card-grid">

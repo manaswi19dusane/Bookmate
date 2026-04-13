@@ -139,6 +139,10 @@ button {
   gap: 12px;
 }
 
+.centered-actions {
+  justify-content: center;
+}
+
 .hero-right {
   display: flex;
   align-items: center;
@@ -222,6 +226,95 @@ button {
 .list-panel {
   border-radius: 24px;
   padding: 22px;
+}
+
+.inline-tip,
+.guide-highlight {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(23, 50, 77, 0.1);
+  box-shadow: var(--shadow);
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.stat-card {
+  min-height: 120px;
+  align-content: center;
+}
+
+.stat-card strong {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1;
+}
+
+.stat-card span,
+.inline-tip p,
+.guide-highlight p,
+.guide-step p,
+.guide-block li,
+.checklist-card p {
+  color: var(--muted);
+}
+
+.checklist-card,
+.guide-step {
+  gap: 10px;
+}
+
+.checklist-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(200, 132, 79, 0.14);
+  color: var(--warm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.status-pill.done {
+  background: rgba(13, 108, 99, 0.12);
+  color: var(--accent-strong);
+}
+
+.guide-step-number {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.guide-list {
+  margin: 0;
+  padding-left: 1.1rem;
 }
 
 .form-card,
@@ -376,6 +469,7 @@ textarea:focus {
   }
 
   .hero-banner,
+  .guide-grid,
   .split-layout,
   .detail-card {
     grid-template-columns: 1fr;
@@ -401,6 +495,7 @@ textarea:focus {
   }
 
   .form-grid,
+  .stats-grid,
   .detail-grid {
     grid-template-columns: 1fr;
   }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { booksApi, preferencesApi, type Book, type UserPreference } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -58,6 +59,17 @@ export default function Preferences() {
         <p>Save favorite genres and authors, and optionally link them to a book the backend already knows about.</p>
       </div>
 
+      <div className="inline-tip">
+        <strong>Why this matters</strong>
+        <p>
+          Preferences are one of the fastest ways to make recommendations feel personal. Add at
+          least one favorite author or genre to improve the next step.
+        </p>
+        <Link to="/recommendations" className="secondary-button">
+          View recommendations
+        </Link>
+      </div>
+
       <div className="split-layout">
         <form className="form-card" onSubmit={handleSubmit}>
           <label>
@@ -103,6 +115,11 @@ export default function Preferences() {
             <div className="empty-panel">
               <h3>No preferences yet</h3>
               <p>Add your first genre or author to personalize the experience.</p>
+              <div className="hero-actions centered-actions">
+                <Link to="/guide" className="secondary-button">
+                  Open guide
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="stack-list">

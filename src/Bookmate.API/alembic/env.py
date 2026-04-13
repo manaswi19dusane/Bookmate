@@ -18,6 +18,7 @@ fileConfig(config.config_file_name)
 # import your models' MetaData object for 'autogenerate' support
 from app.infrastructure.db import engine
 from app.infrastructure.repositories.book_repo import BookORM
+from app.infrastructure.Mappers.user_orm import UserPreferenceORM, UserInteractionORM
 from sqlmodel import SQLModel
 
 target_metadata = SQLModel.metadata
@@ -45,8 +46,15 @@ def run_migrations_online():
         # fallback to sync-style (for alembic commands that expect sync URL)
         url = config.get_main_option("sqlalchemy.url")
         connectable = create_async_engine(url)
-        with connectable.connect() as connection:
-            do_run_migrations(connection)
+        # Use async context manager for async connections
+        async with connectable.connect() as connection:
+            await connection.run_sync(do_run_migrations)
+
+    # For sync operations, use regular context manager
+    url = config.get_main_option("sqlalchemy.url")
+    connectable = create_async_engine(url)
+    with connectable.connect() as connection:
+        do_run_migrations(connection)
 
 if context.is_offline_mode():
     run_migrations_offline()

@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../css/Navbar.css";
-import { FaBell, FaUserCircle } from "react-icons/fa";
 import logo from "../assets/Images/LOGO.png";
+import { useAuth } from "../context/AuthContext";
 
 /*
   👉 Props coming from Layout.tsx
@@ -11,17 +11,25 @@ import logo from "../assets/Images/LOGO.png";
 */
 type NavbarProps = {
   searchQuery: string;
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  setSearchQuery: Dispatch<SetStateAction<string>>;
 };
 
 export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
+  const { isAuthenticated, logout, user } = useAuth();
+  const [authenticated, setAuthenticated] = useState(isAuthenticated);
+  const navigate = useNavigate();
 
-  // Profile dropdown toggle state
-  const [showProfile, setShowProfile] = useState(false);
+  useEffect(() => {
+    setAuthenticated(isAuthenticated);
+  }, [isAuthenticated]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <nav className="navbar">
-
       {/* LEFT SECTION */}
       <div className="nav-left">
         <img src={logo} alt="Bookmate Logo" className="logo-img" />
@@ -33,11 +41,6 @@ export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
         <div className="nav-search-box">
           <span className="nav-search-icon">🔍</span>
 
-          {/* 
-            👉 Controlled Input
-            value = searchQuery from Layout
-            onChange = update Layout state
-          */}
           <input
             type="text"
             placeholder="Search your books..."
@@ -50,27 +53,26 @@ export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
 
       {/* RIGHT SECTION */}
       <div className="nav-right">
-        <Link to="/wishlist">Wishlist</Link>
-
-        <FaBell className="nav-icon" />
-
-        <div
-          className="profile-wrapper"
-          onClick={() => setShowProfile(!showProfile)}
-        >
-          <FaUserCircle className="nav-icon" />
-
-          {/* Dropdown */}
-          {showProfile && (
-            <div className="profile-dropdown">
-              <Link to="/account">My Account</Link>
-              <Link to="/settings">Settings</Link>
-              <Link to="/login">Logout</Link>
-            </div>
-          )}
-        </div>
+        <span className="nav-user">{user?.email ?? "Guest"}</span>
+        <Link to="/library">Library</Link>
+        <Link to="/institution">Institution</Link>
+        <Link to="/club">Club</Link>
+        <Link to="/community">Community</Link>
+        <Link to="/marketplace">Marketplace</Link>
+        <Link to="/recommendations">Recommendations</Link>
+        <Link to="/preferences">Preferences</Link>
+        <Link to="/guide">Guide</Link>
+        {authenticated ? (
+          <button className="nav-button" onClick={handleLogout}>
+            Logout
+          </button>
+        ) : (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Register</Link>
+          </>
+        )}
       </div>
-
     </nav>
   );
 }

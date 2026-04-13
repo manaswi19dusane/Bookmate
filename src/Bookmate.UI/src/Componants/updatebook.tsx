@@ -1,132 +1,67 @@
 import { useState } from "react";
-import "../css/updatebook.css";
-import type { BookResponse } from "../Api/Books";
-import { updateBook } from "../Api/Books";
-
+import { booksApi, type Book } from "../services/api";
 
 interface Props {
-  book: BookResponse;
+  book: Book;
   onClose: () => void;
   onUpdated: () => void;
 }
 
-
 export default function UpdateBook({ book, onClose, onUpdated }: Props) {
+  const [form, setForm] = useState({
+    title: book.title,
+    author: book.author,
+    language: book.language,
+    published_date: book.published_date || "",
+    purchased_date: book.purchased_date || "",
+    image_url: book.image_url || "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  // 🔹 FORM STATE
-  const [title, setTitle] = useState(book.title);
-  const [author, setAuthor] = useState(book.author);
-  const [language, setLanguage] = useState(book.language);
-  const [status, setStatus] =
-  useState<"Owned" | "Wishlist">(book.status || "Owned");
-
-  const [publishedDate, setPublishedDate] = useState(book.published_date || "");
-  const [purchasedDate, setPurchasedDate] = useState(book.purchased_date || "");
-  const [description, setDescription] = useState(book.description || "");
-  const [imageUrl, setImageUrl] = useState(book.image_url || "");
-
-  // 🔹 SAVE HANDLER
-  const handleSave = async () => {
+  async function handleSave() {
+    setSaving(true);
+    setError("");
     try {
-      await updateBook({
-  id: book.id,
-  title,
-  author,
-  language,
-  published_date: publishedDate || null,
-  purchased_date: purchasedDate || null,
-  image_url: imageUrl || null,
-});
-
-
-      onUpdated(); // reload list
-      onClose();   // close drawer
-
-    } catch (error) {
-      console.error("Update failed:", error);
-      alert("Failed to update book");
+      await booksApi.update(book.id, {
+        ...form,
+        published_date: form.published_date || null,
+        purchased_date: form.purchased_date || null,
+        image_url: form.image_url || null,
+      });
+      onUpdated();
+      onClose();
+    } catch (err) {
+      setError((err as Error).message || "Unable to update the book.");
+    } finally {
+      setSaving(false);
     }
-  };
+  }
 
   return (
     <div className="drawer-overlay">
       <div className="drawer">
-
-        {/* HEADER */}
         <div className="drawer-header">
-          <h3>Update Book</h3>
-          <button onClick={onClose}>✖</button>
+          <h3>Edit book</h3>
+          <button onClick={onClose}>Close</button>
         </div>
 
-        {/* BODY */}
         <div className="drawer-body">
-
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Book Title"
-          />
-
-          <input
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            placeholder="Author"
-          />
-
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
-            <option value="">Select Language</option>
-            <option value="English">English</option>
-            <option value="Marathi">Marathi</option>
-          </select>
-
-          <select
-            value={status}
-            onChange={(e) =>
-  setStatus(e.target.value as "Owned" | "Wishlist")
-}
-          >
-            <option value="Owned">Owned</option>
-            <option value="Wishlist">Wishlist</option>
-          </select>
-
-          <input
-            type="date"
-            value={publishedDate}
-            onChange={(e) => setPublishedDate(e.target.value)}
-          />
-
-          <input
-            type="date"
-            value={purchasedDate}
-            onChange={(e) => setPurchasedDate(e.target.value)}
-          />
-
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add a short description..."
-          />
-
-          <input
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="Paste image URL"
-          />
+          <input value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Title" />
+          <input value={form.author} onChange={(event) => setForm((prev) => ({ ...prev, author: event.target.value }))} placeholder="Author" />
+          <input value={form.language} onChange={(event) => setForm((prev) => ({ ...prev, language: event.target.value }))} placeholder="Language" />
+          <input type="date" value={form.published_date} onChange={(event) => setForm((prev) => ({ ...prev, published_date: event.target.value }))} />
+          <input type="date" value={form.purchased_date} onChange={(event) => setForm((prev) => ({ ...prev, purchased_date: event.target.value }))} />
+          <input value={form.image_url} onChange={(event) => setForm((prev) => ({ ...prev, image_url: event.target.value }))} placeholder="Cover image URL" />
+          {error && <p className="form-error">{error}</p>}
         </div>
 
-        {/* FOOTER */}
         <div className="drawer-footer">
-          <button className="cancel-btn" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="save-btn" onClick={handleSave}>
-            Save
+          <button className="cancel-btn" onClick={onClose}>Cancel</button>
+          <button className="save-btn" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save changes"}
           </button>
         </div>
-
       </div>
     </div>
   );

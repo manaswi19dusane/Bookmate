@@ -1,104 +1,89 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import type { ReactNode } from "react";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Layout from "./Componants/layout";
 import Home from "./Pages/Home";
 import AddBook from "./Pages/AddBook";
 import Wishlist from "./Pages/Wishlist";
-import Login from "./Componants/login";
-import Signup from "./Componants/signup";
-import Layout from "./Componants/layout";
+import Login from "./Pages/Login";
+import Register from "./Pages/Register";
+import Preferences from "./Pages/Preferences";
+import Interactions from "./Pages/Interactions";
+import Recommendations from "./Pages/Recommendations";
+import Library from "./Pages/Library";
+import Institution from "./Pages/Institution";
+import Club from "./Pages/Club";
+import Community from "./Pages/Community";
+import Marketplace from "./Pages/Marketplace";
 import BookDetail from "./Componants/BookDetail";
+import UserGuide from "./Pages/UserGuide";
 
-
-// Define User type
-export interface User {
-  email: string;
-  id: string;
+function PrivateRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-// PrivateRoute
-const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
-  return children;
-};
+function PublicRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
+}
 
-const AppWrapper = () => {
-  const navigate = useNavigate();
-
-  const setUser = (user: User) => {
-    localStorage.setItem("token", user.id);
-  };
-
-  const switchToSignup = () => navigate("/signup");
-  const switchToLogin = () => navigate("/login");
-
+function AppRoutes() {
   return (
     <Routes>
-      {/* Auth pages */}
       <Route
         path="/login"
-        element={<Login setUser={setUser} switchToSignup={switchToSignup} />}
-      />
-      <Route path="/book/:id" element={<BookDetail />} />
-
-
-      <Route
-        path="/signup"
-        element={<Signup setUser={setUser} switchToLogin={switchToLogin} />}
-      />
-      
-
-      {/* App pages */}
-      <Route
-        path="/"
         element={
-          <PrivateRoute>
-            <Layout>
-              <Home />
-            </Layout>
-          </PrivateRoute>
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
         }
       />
-
       <Route
-        path="/books/marathi"
+        path="/register"
         element={
-          <PrivateRoute>
-            <Layout>
-              <Home />
-            </Layout>
-          </PrivateRoute>
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
         }
       />
+      <Route path="/guide" element={<UserGuide />} />
+      {[
+        { path: "/", element: <Home /> },
+        { path: "/add", element: <AddBook /> },
+        { path: "/book/:id", element: <BookDetail /> },
+        { path: "/wishlist", element: <Wishlist /> },
+        { path: "/library", element: <Library /> },
+        { path: "/marketplace", element: <Marketplace /> },
+        { path: "/preferences", element: <Preferences /> },
+        { path: "/interactions", element: <Interactions /> },
+        { path: "/recommendations", element: <Recommendations /> },
+        { path: "/institution", element: <Institution /> },
+        { path: "/club", element: <Club /> },
+        { path: "/community", element: <Community /> },
+      ].map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={
+            <PrivateRoute>
+              <Layout>{route.element}</Layout>
+            </PrivateRoute>
+          }
+        />
+      ))}
 
-      <Route
-        path="/add"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <AddBook />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/wishlist"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Wishlist />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
-};
+}
 
-const App = () => {
+export default function App() {
   return (
-    <Router>
-      <AppWrapper />
-    </Router>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
-};
-
-export default App;
+}

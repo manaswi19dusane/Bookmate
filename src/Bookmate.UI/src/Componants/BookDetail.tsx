@@ -1,33 +1,60 @@
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import type { Book } from "../Types/Book";
-import { fetchBook } from "../Api/Books";  
+import { useParams } from "react-router-dom";
+import { booksApi, type Book } from "../services/api";
 
 export default function BookDetail() {
-
   const { id } = useParams();
   const [book, setBook] = useState<Book | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setError("Book not found.");
+      setLoading(false);
+      return;
+    }
 
-    fetchBook(id)          
-      .then(data => setBook(data))
-      .catch(err => console.error(err));
-
+    booksApi
+      .get(id)
+      .then(setBook)
+      .catch((err) => setError((err as Error).message))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  if (!book) return <p>Loading...</p>;
+  if (loading) return <div className="page-shell"><p className="page-status">Loading book details...</p></div>;
+  if (error || !book) return <div className="page-shell"><p className="form-error">{error || "Book not found."}</p></div>;
 
   return (
-    <div>
-      <h2>{book.title}</h2>
-      <p>{book.author}</p>
-      
-
-      {book.image_url && (
-        <img src={book.image_url} width="200" />
-      )}
-    </div>
+    <section className="page-shell detail-page">
+      <div className="detail-card">
+        <div className="detail-cover">
+          {book.image_url ? <img src={book.image_url} alt={book.title} /> : <div className="image-placeholder">{book.title[0]}</div>}
+        </div>
+        <div className="detail-body">
+          <p className="page-eyebrow">Book detail</p>
+          <h1>{book.title}</h1>
+          <p className="detail-author">by {book.author}</p>
+          <dl className="detail-grid">
+            <div>
+              <dt>Language</dt>
+              <dd>{book.language || "Not provided"}</dd>
+            </div>
+            <div>
+              <dt>Published</dt>
+              <dd>{book.published_date || "Not provided"}</dd>
+            </div>
+            <div>
+              <dt>Purchased</dt>
+              <dd>{book.purchased_date || "Not provided"}</dd>
+            </div>
+            <div>
+              <dt>ID</dt>
+              <dd>{book.id}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
   );
 }

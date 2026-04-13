@@ -5,7 +5,10 @@ import {
   FaPlus,
   FaHeart,
   FaRobot,
-
+  FaBookOpen,
+  FaStore,
+  FaSlidersH,
+  FaRegCompass,
 } from "react-icons/fa";
 
 interface SidebarProps {
@@ -41,6 +44,34 @@ export default function Sidebar({ onOpenChat }: SidebarProps) {
           <NavLink to="/wishlist" className="sidebar-link">
             <FaHeart />
             <span>Wishlist</span>
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink to="/preferences" className="sidebar-link">
+            <FaSlidersH />
+            <span>Preferences</span>
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink to="/interactions" className="sidebar-link">
+            <FaBookOpen />
+            <span>Activity</span>
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink to="/marketplace" className="sidebar-link">
+            <FaStore />
+            <span>Marketplace</span>
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink to="/guide" className="sidebar-link">
+            <FaRegCompass />
+            <span>User Guide</span>
           </NavLink>
         </li>
 

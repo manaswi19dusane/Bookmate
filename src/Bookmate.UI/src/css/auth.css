@@ -1,0 +1,20 @@
+.auth-page {
+  background:
+    radial-gradient(circle at top right, rgba(200, 132, 79, 0.22), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(13, 108, 99, 0.18), transparent 35%),
+    linear-gradient(180deg, #f8f2e7 0%, #eef6fb 100%);
+}
+
+.auth-form {
+  position: relative;
+}
+
+.auth-form::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 92px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c8844f, #0d6c63);
+}

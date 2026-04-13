@@ -1,107 +1,42 @@
-import type { Book } from "../Types/Book";
-import "../css/BookCard.css";
-import { useState, useEffect } from "react";
-import ReactDOM from "react-dom";
-import { deleteBook } from "../Api/Books";
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import type { Book } from "../services/api";
+import "../css/BookCard.css";
 
-
-
-interface Props {
+type BookCardProps = {
   book: Book;
-  onDelete: (id: string) => void;  
-  onUpdate: (book: Book) => void;
-}
+  badge?: string;
+  secondaryText?: string;
+  actions?: ReactNode;
+};
 
-export default function BookCard({ book, onDelete, onUpdate }: Props) {
+export default function BookCard({ book, badge, secondaryText, actions }: BookCardProps) {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"Owned" | "Wishlist">(() => {
-    const saved = localStorage.getItem(`book_${book.id}_status`);
-    
-
-    return saved === "Owned" || saved === "Wishlist" ? saved : "Wishlist";
-  });
-
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem(`book_${book.id}_status`, status);
-  }, [book.id, status]);
-
-  const toggleWishlist = () => {
-    setStatus((prev) => (prev === "Owned" ? "Wishlist" : "Owned"));
-  };
-
-  const handleDeleteBook = async () => {
-    try {
-  
-      await deleteBook(book.id);
-      onDelete(book.id);
-      setShowConfirm(false);
-    } catch (error) {
-      console.error("Delete failed", error);
-    }
-  };
-
 
   return (
-   <div className="book-card" onClick={() => navigate("/book/" + book.id)}>
-
-      {/* BOOK IMAGE */}
+    <article className="book-card" onClick={() => navigate(`/book/${book.id}`)} role="button" tabIndex={0}>
       <div className="book-image-wrapper">
         {book.image_url ? (
           <img src={book.image_url} alt={book.title} />
         ) : (
-          <div className="image-placeholder">No Image</div>
+          <div className="image-placeholder">{book.title.slice(0, 1)}</div>
         )}
       </div>
 
-      {/* BOOK INFO */}
       <div className="book-info">
-        <h3 className="book-title">{book.title}</h3>
-        <p className="book-author">{book.author}</p>
-        <span className={`book-status ${status.toLowerCase()}`}>
-          {status}
-        </span>
-      </div>
-
-      {/* ACTIONS */}
-      <div className="book-actions">
-        <button className="icon-btn" onClick={() => onUpdate(book)}>✏️</button>
-        <button className="icon-btn delete" onClick={() => setShowConfirm(true)}>🗑</button>
-        <button className="icon-btn" onClick={toggleWishlist}>
-          {status === "Owned" ? "❤️" : "🤍"}
-        </button>
-      </div>
-
-      {/* CUSTOM DELETE CONFIRMATION MODAL */}
-      {showConfirm &&
-  ReactDOM.createPortal(
-    <div className="confirm-modal">
-      <div className="modal-content">
-        <p>
-          Are you sure you want to delete <strong>{book.title}</strong>?
-        </p>
-
-        <div className="modal-buttons">
-          <button className="yes-btn" onClick={handleDeleteBook}>
-          Yes
-          </button>
-
-          
-
-          <button
-            className="no-btn"
-            onClick={() => setShowConfirm(false)}
-          >
-            No
-          </button>
+        <div className="book-card-topline">
+          <p className="book-author">{book.author}</p>
+          {badge && <span className="book-status owned">{badge}</span>}
         </div>
+        <h3 className="book-title">{book.title}</h3>
+        <p className="book-meta">{secondaryText || book.language || "Language not set"}</p>
       </div>
-    </div>,
-    document.body
-  )}
 
-    </div>
+      {actions ? (
+        <div className="book-actions" onClick={(event) => event.stopPropagation()}>
+          {actions}
+        </div>
+      ) : null}
+    </article>
   );
 }

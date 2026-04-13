@@ -202,6 +202,22 @@ Bookmate is now easiest to use with this flow:
 - Better guidance when pages have no data yet
 - Easier handoff for demos, classmates, or non-technical users
 
+## 🛡️ Admin Management
+
+Bookmate now includes a full admin workspace at `/admin`.
+
+- The first registered user is automatically assigned the `admin` role.
+- Admin access is enforced in the backend through protected `/api/admin/*` endpoints.
+- Admins can review platform totals, promote or demote users, delete users, moderate books, clean library records, manage marketplace listings, and verify or remove institutions, clubs, and community groups.
+
+### Admin Workflow
+
+1. Register the first account to become the initial admin.
+2. Log in and open the `Admin` page from the main navigation.
+3. Use the `Overview` tab to monitor totals across users, books, marketplace, and communities.
+4. Use `Users` to search accounts and manage roles.
+5. Use the remaining tabs to moderate content and keep the platform clean.
+
 ## 📡 API Endpoints
 
 ### Books

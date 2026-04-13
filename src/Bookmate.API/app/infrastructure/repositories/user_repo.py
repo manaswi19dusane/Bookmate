@@ -32,6 +32,11 @@ class UserRepository:
             raise UserNotFound(id)
         return UserMapper.to_domain_from_orm(orm)
 
+    async def count_users(self) -> int:
+        stmt = select(UserORM)
+        result = await self.session.execute(stmt)
+        return len(result.scalars().all())
+
     async def list_preferences(self, user_id: str) -> List[UserPreference]:
         stmt = select(UserPreferenceORM).where(UserPreferenceORM.user_id == user_id)
         result = await self.session.execute(stmt)

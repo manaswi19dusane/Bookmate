@@ -12,6 +12,7 @@ type AuthContextValue = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   login: (payload: AuthPayload) => Promise<void>;
   register: (payload: AuthPayload) => Promise<void>;
   logout: () => void;
@@ -50,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       token,
       isAuthenticated: Boolean(token),
+      isAdmin: user?.role === "admin",
       async login(payload) {
         const response = await authApi.login(payload);
         setToken(response.access_token);

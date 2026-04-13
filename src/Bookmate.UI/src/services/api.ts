@@ -5,6 +5,7 @@ export interface User {
   id: string;
   email: string;
   created_at: string;
+  role: string;
 }
 
 export interface AuthPayload {
@@ -39,6 +40,7 @@ export interface BookPayload {
 
 export interface UserPreference {
   id: string;
+  user_id?: string | null;
   genre: string;
   author: string;
   book_id?: string | null;
@@ -53,6 +55,7 @@ export interface UserPreferencePayload {
 
 export interface UserInteraction {
   id: string;
+  user_id?: string | null;
   book_id: string;
   interaction_type: string;
   rating?: number | null;
@@ -143,6 +146,42 @@ export interface MarketplaceItem {
   is_available: boolean;
   buyer_user_id?: string | null;
   sold_at?: string | null;
+}
+
+export interface AdminOverview {
+  users: number;
+  admins: number;
+  books: number;
+  library_items: number;
+  preferences: number;
+  interactions: number;
+  institutions: number;
+  corporate_clubs: number;
+  community_groups: number;
+  marketplace_items: number;
+  active_marketplace_items: number;
+}
+
+export interface AdminUserSummary {
+  id: string;
+  email: string;
+  role: string;
+  created_at: string;
+  preference_count: number;
+  interaction_count: number;
+  library_count: number;
+}
+
+export interface AdminLibrarySummary {
+  id: string;
+  user_id: string;
+  user_email?: string | null;
+  book_id: string;
+  book_title?: string | null;
+  status: string;
+  added_at: string;
+  progress?: number | null;
+  notes?: string | null;
 }
 
 export interface MarketplacePayload {
@@ -320,6 +359,18 @@ export const institutionsApi = {
       body: JSON.stringify(payload),
     });
   },
+  update(institutionId: string, payload: Partial<InstitutionPayload>) {
+    return request<Institution>(`/institutions/${institutionId}`, {
+      method: "PUT",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  remove(institutionId: string) {
+    return request<void>(`/institutions/${institutionId}`, {
+      method: "DELETE",
+    });
+  },
 };
 
 export const corporateClubsApi = {
@@ -331,6 +382,18 @@ export const corporateClubsApi = {
       method: "POST",
       headers: buildHeaders(null, true),
       body: JSON.stringify(payload),
+    });
+  },
+  update(clubId: string, payload: Partial<CorporateClubPayload>) {
+    return request<CorporateClub>(`/corporate-clubs/${clubId}`, {
+      method: "PUT",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  remove(clubId: string) {
+    return request<void>(`/corporate-clubs/${clubId}`, {
+      method: "DELETE",
     });
   },
 };
@@ -346,6 +409,18 @@ export const communityGroupsApi = {
       body: JSON.stringify(payload),
     });
   },
+  update(groupId: string, payload: Partial<CommunityGroupPayload>) {
+    return request<CommunityGroup>(`/community-groups/${groupId}`, {
+      method: "PUT",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  remove(groupId: string) {
+    return request<void>(`/community-groups/${groupId}`, {
+      method: "DELETE",
+    });
+  },
 };
 
 export const marketplaceApi = {
@@ -357,6 +432,91 @@ export const marketplaceApi = {
       method: "POST",
       headers: buildHeaders(null, true),
       body: JSON.stringify(payload),
+    });
+  },
+  update(marketplaceId: string, payload: Partial<MarketplacePayload> & { is_available?: boolean }) {
+    return request<MarketplaceItem>(`/marketplaces/${marketplaceId}`, {
+      method: "PUT",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  remove(marketplaceId: string) {
+    return request<void>(`/marketplaces/${marketplaceId}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+export const adminApi = {
+  overview(token: string) {
+    return request<AdminOverview>("/api/admin/overview", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  listUsers(token: string, search = "") {
+    const query = search ? `?search=${encodeURIComponent(search)}` : "";
+    return request<AdminUserSummary[]>(`/api/admin/users${query}`, {
+      headers: buildHeaders(token, false),
+    });
+  },
+  updateUserRole(token: string, userId: string, role: string) {
+    return request<User>(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: buildHeaders(token, true),
+      body: JSON.stringify({ role }),
+    });
+  },
+  deleteUser(token: string, userId: string) {
+    return request<void>(`/api/admin/users/${userId}`, {
+      method: "DELETE",
+      headers: buildHeaders(token, false),
+    });
+  },
+  listBooks(token: string) {
+    return request<Book[]>("/api/admin/books", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  listLibraries(token: string) {
+    return request<AdminLibrarySummary[]>("/api/admin/libraries", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  deleteLibraryItem(token: string, libraryId: string) {
+    return request<void>(`/api/admin/libraries/${libraryId}`, {
+      method: "DELETE",
+      headers: buildHeaders(token, false),
+    });
+  },
+  listPreferences(token: string) {
+    return request<UserPreference[]>("/api/admin/preferences", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  listInteractions(token: string) {
+    return request<UserInteraction[]>("/api/admin/interactions", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  listInstitutions(token: string) {
+    return request<Institution[]>("/api/admin/institutions", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  listCorporateClubs(token: string) {
+    return request<CorporateClub[]>("/api/admin/corporate-clubs", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  listCommunityGroups(token: string) {
+    return request<CommunityGroup[]>("/api/admin/community-groups", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  listMarketplaces(token: string) {
+    return request<MarketplaceItem[]>("/api/admin/marketplaces", {
+      headers: buildHeaders(token, false),
     });
   },
 };

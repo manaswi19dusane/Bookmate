@@ -317,6 +317,58 @@ button {
   padding-left: 1.1rem;
 }
 
+.admin-stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.admin-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.admin-table {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-table-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) 130px minmax(220px, 2fr) 140px 160px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(23, 50, 77, 0.08);
+}
+
+.admin-table-header {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--warm);
+  background: transparent;
+  border: none;
+  padding: 0 4px;
+}
+
+.admin-record {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.admin-record p,
+.admin-record small {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
 .form-card,
 .inline-form {
   display: grid;
@@ -497,6 +549,10 @@ textarea:focus {
   .form-grid,
   .stats-grid,
   .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-table-row {
     grid-template-columns: 1fr;
   }
 

@@ -8,6 +8,7 @@ class UserORM(SQLModel, table=True):
     email: str = Field(index=True, sa_column_kwargs={"unique": True})
     password: str
     created_at: datetime
+    role: str = Field(default="user", index=True)
 
 
 class UserPreferenceORM(SQLModel, table=True):

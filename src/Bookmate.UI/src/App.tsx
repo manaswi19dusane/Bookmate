@@ -17,6 +17,7 @@ import Community from "./Pages/Community";
 import Marketplace from "./Pages/Marketplace";
 import BookDetail from "./Componants/BookDetail";
 import UserGuide from "./Pages/UserGuide";
+import Admin from "./Pages/Admin";
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -26,6 +27,14 @@ function PrivateRoute({ children }: { children: ReactNode }) {
 function PublicRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isAdmin } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return isAdmin ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 function AppRoutes() {
@@ -48,6 +57,16 @@ function AppRoutes() {
         }
       />
       <Route path="/guide" element={<UserGuide />} />
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <Layout>
+              <Admin />
+            </Layout>
+          </AdminRoute>
+        }
+      />
       {[
         { path: "/", element: <Home /> },
         { path: "/add", element: <AddBook /> },

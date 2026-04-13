@@ -70,6 +70,7 @@ async def list_preferences(
     return [
         {
             "id": preference.id.value,
+            "user_id": preference.user_id,
             "genre": preference.genre,
             "author": preference.author,
             "book_id": preference.book_id,
@@ -98,6 +99,7 @@ async def create_preference(
         await repo.add_preference(preference)
         return {
             "id": preference.id.value,
+            "user_id": preference.user_id,
             "genre": preference.genre,
             "author": preference.author,
             "book_id": preference.book_id,
@@ -121,6 +123,7 @@ async def list_interactions(
     return [
         {
             "id": interaction.id.value,
+            "user_id": interaction.user_id,
             "book_id": interaction.book_id,
             "interaction_type": interaction.interaction_type,
             "rating": interaction.rating,
@@ -147,6 +150,7 @@ async def create_interaction(
     await repo.add_interaction(interaction)
     return {
         "id": interaction.id.value,
+        "user_id": interaction.user_id,
         "book_id": interaction.book_id,
         "interaction_type": interaction.interaction_type,
         "rating": interaction.rating,

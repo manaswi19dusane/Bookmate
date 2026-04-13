@@ -24,6 +24,9 @@ from app.infrastructure.Mappers.user_orm import (
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+DEFAULT_ADMIN_EMAIL = "admin@bookmate.com"
+DEFAULT_ADMIN_PASSWORD = "P@$$w0rd"
+
 
 def _uuid() -> str:
     return str(uuid4())
@@ -145,6 +148,7 @@ def seed_users(db: Session) -> list[UserORM]:
             email=user_data["email"],
             password=pwd_context.hash(user_data["password"]),
             created_at=datetime.utcnow(),
+            role="user",
         )
         db.add(user)
         created_users.append(user)
@@ -153,6 +157,33 @@ def seed_users(db: Session) -> list[UserORM]:
     for user in created_users:
         db.refresh(user)
     return created_users
+
+
+def ensure_default_admin(db: Session) -> UserORM:
+    admin_user = db.execute(
+        select(UserORM).where(UserORM.email == DEFAULT_ADMIN_EMAIL)
+    ).scalar_one_or_none()
+
+    if admin_user is None:
+        admin_user = UserORM(
+            id=_uuid(),
+            email=DEFAULT_ADMIN_EMAIL,
+            password=pwd_context.hash(DEFAULT_ADMIN_PASSWORD),
+            created_at=datetime.utcnow(),
+            role="admin",
+        )
+        db.add(admin_user)
+        db.commit()
+        db.refresh(admin_user)
+        return admin_user
+
+    if admin_user.role != "admin":
+        admin_user.role = "admin"
+        db.add(admin_user)
+        db.commit()
+        db.refresh(admin_user)
+
+    return admin_user
 
 
 def seed_books(db: Session) -> list[BookORM]:

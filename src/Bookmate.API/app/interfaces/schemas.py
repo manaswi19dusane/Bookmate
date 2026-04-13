@@ -45,12 +45,53 @@ class UserResponse(BaseModel):
     id: str
     email: str
     created_at: datetime
+    role: str
 
 
 class AuthResponse(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+
+
+class AdminUserUpdateRequest(BaseModel):
+    role: Optional[str] = None
+
+
+class AdminOverviewResponse(BaseModel):
+    users: int
+    admins: int
+    books: int
+    library_items: int
+    preferences: int
+    interactions: int
+    institutions: int
+    corporate_clubs: int
+    community_groups: int
+    marketplace_items: int
+    active_marketplace_items: int
+
+
+class AdminUserSummary(BaseModel):
+    id: str
+    email: str
+    role: str
+    created_at: datetime
+    preference_count: int
+    interaction_count: int
+    library_count: int
+
+
+class AdminLibrarySummary(BaseModel):
+    id: str
+    user_id: str
+    user_email: Optional[str] = None
+    book_id: str
+    book_title: Optional[str] = None
+    status: str
+    added_at: datetime
+    progress: Optional[int] = None
+    notes: Optional[str] = None
 
 
 class UserPreferenceRequest(BaseModel):
@@ -62,6 +103,7 @@ class UserPreferenceRequest(BaseModel):
 class UserPreferenceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
+    user_id: Optional[str] = None
     genre: str
     author: str
     book_id: Optional[str] = None
@@ -77,6 +119,7 @@ class UserInteractionRequest(BaseModel):
 class UserInteractionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
+    user_id: Optional[str] = None
     book_id: str
     interaction_type: str
     rating: Optional[int] = None

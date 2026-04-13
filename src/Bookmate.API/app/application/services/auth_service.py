@@ -37,16 +37,18 @@ class AuthService:
         if existing_user is not None:
             raise UserAlreadyExists(payload.email)
 
+        role = "admin" if await self.user_repo.count_users() == 0 else "user"
         hashed_password = self.get_password_hash(payload.password)
         user = User(
             id=UserId.new(),
             email=payload.email,
             password=hashed_password,
             created_at=datetime.utcnow(),
+            role=role,
         )
         await self.user_repo.add(user)
 
-        access_token = self.create_access_token({"sub": user.id.value})
+        access_token = self.create_access_token({"sub": user.id.value, "role": user.role})
 
         return {
             "access_token": access_token,
@@ -55,6 +57,7 @@ class AuthService:
                 "id": user.id.value,
                 "email": user.email,
                 "created_at": user.created_at,
+                "role": user.role,
             },
         }
 
@@ -65,7 +68,7 @@ class AuthService:
         if not self.verify_password(payload.password, user.password):
             raise UserNotFound(payload.email)
 
-        access_token = self.create_access_token({"sub": user.id.value})
+        access_token = self.create_access_token({"sub": user.id.value, "role": user.role})
 
         return {
             "access_token": access_token,
@@ -74,5 +77,6 @@ class AuthService:
                 "id": user.id.value,
                 "email": user.email,
                 "created_at": user.created_at,
+                "role": user.role,
             },
         }

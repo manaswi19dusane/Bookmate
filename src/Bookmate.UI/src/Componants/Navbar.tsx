@@ -15,7 +15,7 @@ type NavbarProps = {
 };
 
 export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, logout, user, isAdmin } = useAuth();
   const [authenticated, setAuthenticated] = useState(isAuthenticated);
   const navigate = useNavigate();
 
@@ -62,6 +62,7 @@ export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
         <Link to="/recommendations">Recommendations</Link>
         <Link to="/preferences">Preferences</Link>
         <Link to="/guide">Guide</Link>
+        {isAdmin ? <Link to="/admin">Admin</Link> : null}
         {authenticated ? (
           <button className="nav-button" onClick={handleLogout}>
             Logout

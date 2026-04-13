@@ -9,13 +9,16 @@ import {
   FaStore,
   FaSlidersH,
   FaRegCompass,
+  FaUserShield,
 } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 interface SidebarProps {
   onOpenChat: () => void;
 }
 
 export default function Sidebar({ onOpenChat }: SidebarProps) {
+  const { isAdmin } = useAuth();
   return (
     <aside className="sidebar">
       <ul className="sidebar-menu">
@@ -74,6 +77,15 @@ export default function Sidebar({ onOpenChat }: SidebarProps) {
             <span>User Guide</span>
           </NavLink>
         </li>
+
+        {isAdmin ? (
+          <li>
+            <NavLink to="/admin" className="sidebar-link">
+              <FaUserShield />
+              <span>Admin</span>
+            </NavLink>
+          </li>
+        ) : null}
 
         <li onClick={onOpenChat} className="sidebar-link">
           <FaRobot />

@@ -32,3 +32,18 @@ async def init_db():
                     "ADD COLUMN book_id VARCHAR"
                 )
             )
+        user_columns_result = await conn.execute(sa.text("PRAGMA table_info(userorm)"))
+        user_columns = {row[1] for row in user_columns_result.fetchall()}
+        if "role" not in user_columns:
+            await conn.execute(
+                sa.text(
+                    "ALTER TABLE userorm "
+                    "ADD COLUMN role VARCHAR DEFAULT 'user'"
+                )
+            )
+            await conn.execute(
+                sa.text(
+                    "UPDATE userorm SET role = 'admin' "
+                    "WHERE id = (SELECT id FROM userorm ORDER BY created_at ASC LIMIT 1)"
+                )
+            )

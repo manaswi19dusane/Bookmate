@@ -17,6 +17,7 @@ class UserMapper:
             email=user.email,
             password=user.password,
             created_at=user.created_at,
+            role=user.role,
         )
 
     @staticmethod
@@ -26,6 +27,7 @@ class UserMapper:
             email=orm.email,
             password=orm.password,
             created_at=orm.created_at,
+            role=getattr(orm, "role", "user"),
         )
 
     @staticmethod

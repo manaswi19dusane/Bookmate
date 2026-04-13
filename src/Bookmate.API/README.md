@@ -14,6 +14,10 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+Default admin bootstrap on startup:
+- Email: `admin@bookmate.com`
+- Password: `P@$$w0rd`
+
 3. Alembic
 - alembic is included. To generate the first migration:
 ```powershell
@@ -24,4 +28,3 @@ Note: Alembic is configured to use the DATABASE_URL in this project.
 
 ## Project layout
 See `app/` folder for Domain, Application, Infrastructure and Interfaces layers.
-

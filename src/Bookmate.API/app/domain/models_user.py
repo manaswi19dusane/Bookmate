@@ -19,6 +19,7 @@ class User:
     email: str
     password: str
     created_at: datetime
+    role: str = "user"
 
 
 @dataclass(frozen=True)

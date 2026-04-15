@@ -9,10 +9,7 @@ class UpdateBookUseCase:
         self.repo = repo
 
     async def execute(self, book_id: str, dto: UpdateBookDTO) -> BookDTO:
-       
-        
-        updated = BookMapper.from_update_dto(book_id, dto)
-
+        existing = await self.repo.get_by_id(book_id)
+        updated = BookMapper.merge(existing, dto)
         await self.repo.update(book_id, updated)
-
         return BookMapper.to_dto(updated)

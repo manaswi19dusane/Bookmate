@@ -25,7 +25,11 @@ export interface Book {
   language: string;
   published_date?: string | null;
   image_url?: string | null;
+  description?: string | null;
+  isbn?: string | null;
+  source?: string | null;
   purchased_date?: string | null;
+  owner_id?: string | null;
 }
 
 export interface BookPayload {
@@ -34,7 +38,62 @@ export interface BookPayload {
   language: string;
   published_date?: string | null;
   image_url?: string | null;
+  description?: string | null;
+  isbn?: string | null;
+  source?: string | null;
   purchased_date?: string | null;
+}
+
+export interface GoogleBook {
+  external_id: string;
+  title: string;
+  authors: string[];
+  thumbnail?: string | null;
+  description?: string | null;
+  published_date?: string | null;
+  language?: string | null;
+  isbn?: string | null;
+  categories: string[];
+}
+
+export interface RankedGoogleBook extends GoogleBook {
+  match_score: number;
+  recommendation_reason: string;
+}
+
+export interface WishlistItem {
+  id: string;
+  user_id: string;
+  book_name: string;
+  author: string;
+  image?: string | null;
+  created_at: string;
+}
+
+export interface WishlistPayload {
+  book_name: string;
+  author: string;
+  image?: string | null;
+}
+
+export interface LendingPayload {
+  friend_name: string;
+  friend_email: string;
+  due_date: string;
+}
+
+export interface LendingRecord {
+  id: string;
+  book_id: string;
+  book_name: string;
+  owner_id: string;
+  friend_name: string;
+  friend_email: string;
+  lend_date: string;
+  due_date: string;
+  status: "active" | "overdue" | "returned";
+  reminder_stage?: string | null;
+  returned_at?: string | null;
 }
 
 export interface UserPreference {
@@ -202,20 +261,25 @@ export const booksApi = {
   list() {
     return request<Book[]>("/api/books");
   },
+  listMine(token: string) {
+    return request<Book[]>("/api/books/mine", {
+      headers: buildHeaders(token, false),
+    });
+  },
   get(bookId: string) {
     return request<Book>(`/api/books/${bookId}`);
   },
-  create(payload: BookPayload) {
+  create(payload: BookPayload, token?: string | null) {
     return request<Book>("/api/books", {
       method: "POST",
-      headers: buildHeaders(null, true),
+      headers: buildHeaders(token, true),
       body: JSON.stringify(payload),
     });
   },
-  update(bookId: string, payload: BookPayload) {
+  update(bookId: string, payload: BookPayload, token?: string | null) {
     return request<Book>(`/api/books/${bookId}`, {
       method: "PUT",
-      headers: buildHeaders(null, true),
+      headers: buildHeaders(token, true),
       body: JSON.stringify(payload),
     });
   },
@@ -226,9 +290,10 @@ export const booksApi = {
       body: JSON.stringify(payload),
     });
   },
-  remove(bookId: string) {
+  remove(bookId: string, token?: string | null) {
     return request<void>(`/api/books/${bookId}`, {
       method: "DELETE",
+      headers: buildHeaders(token, false),
     });
   },
   listAvailable(token: string) {
@@ -357,6 +422,71 @@ export const marketplaceApi = {
       method: "POST",
       headers: buildHeaders(null, true),
       body: JSON.stringify(payload),
+    });
+  },
+};
+
+export const lendingsApi = {
+  list(token: string) {
+    return request<LendingRecord[]>("/api/lendings/", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  lend(token: string, bookId: string, payload: LendingPayload) {
+    return request<LendingRecord>(`/api/lendings/${bookId}`, {
+      method: "POST",
+      headers: buildHeaders(token, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  markReturned(token: string, lendingId: string) {
+    return request<LendingRecord>(`/api/lendings/${lendingId}/return`, {
+      method: "PATCH",
+      headers: buildHeaders(token, false),
+    });
+  },
+  runReminders(token: string) {
+    return request<{ sent: number }>("/api/lendings/reminders/run", {
+      method: "POST",
+      headers: buildHeaders(token, false),
+    });
+  },
+};
+
+export const discoverApi = {
+  search(params: { query?: string; category?: string }) {
+    const search = new URLSearchParams();
+    if (params.query?.trim()) {
+      search.set("query", params.query.trim());
+    }
+    if (params.category?.trim()) {
+      search.set("category", params.category.trim());
+    }
+    const query = search.toString();
+    return request<GoogleBook[]>(`/api/discover/books${query ? `?${query}` : ""}`);
+  },
+  lookupIsbn(barcode: string) {
+    return request<GoogleBook>(`/api/discover/isbn/${encodeURIComponent(barcode)}`);
+  },
+};
+
+export const wishlistApi = {
+  list(token: string) {
+    return request<WishlistItem[]>("/api/wishlist/", {
+      headers: buildHeaders(token, false),
+    });
+  },
+  create(token: string, payload: WishlistPayload) {
+    return request<WishlistItem>("/api/wishlist/", {
+      method: "POST",
+      headers: buildHeaders(token, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  remove(token: string, wishlistId: string) {
+    return request<void>(`/api/wishlist/${wishlistId}`, {
+      method: "DELETE",
+      headers: buildHeaders(token, false),
     });
   },
 };

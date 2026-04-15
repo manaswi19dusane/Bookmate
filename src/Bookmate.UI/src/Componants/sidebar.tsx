@@ -9,6 +9,7 @@ import {
   FaStore,
   FaSlidersH,
   FaRegCompass,
+  FaShareAlt,
 } from "react-icons/fa";
 
 interface SidebarProps {
@@ -58,6 +59,13 @@ export default function Sidebar({ onOpenChat }: SidebarProps) {
           <NavLink to="/interactions" className="sidebar-link">
             <FaBookOpen />
             <span>Activity</span>
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink to="/lending" className="sidebar-link">
+            <FaShareAlt />
+            <span>Lending</span>
           </NavLink>
         </li>
 

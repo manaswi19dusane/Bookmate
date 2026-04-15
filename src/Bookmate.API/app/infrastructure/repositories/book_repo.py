@@ -38,18 +38,28 @@ class BookRepository(BookRepositoryProtocol):
 
         return [BookMapper.to_domain_from_orm(o) for o in orm_list]
 
+    async def list_by_owner(self, owner_id: str) -> List[DomainBook]:
+        stmt = select(BookORM).where(BookORM.owner_id == owner_id)
+        result = await self.session.execute(stmt)
+        orm_list = result.scalars().all()
+        return [BookMapper.to_domain_from_orm(o) for o in orm_list]
+
     # ✅ UPDATE (MOVED INSIDE CLASS)
     async def update(self, id: str, book: DomainBook) -> None:
+        existing = await self.get_by_id(id)
         stmt = (
             update(BookORM)
             .where(BookORM.id == str(id))
             .values(
-                title=book.title,
-                author=book.author,
-                language=book.language,
-                published_date=book.published_date,
-                image_url=book.image_url,
-                purchased_date=book.purchased_date,
+                title=book.title if book.title is not None else existing.title,
+                author=book.author if book.author is not None else existing.author,
+                language=book.language if book.language is not None else existing.language,
+                published_date=book.published_date if book.published_date is not None else existing.published_date,
+                image_url=book.image_url if book.image_url is not None else existing.image_url,
+                description=book.description if book.description is not None else existing.description,
+                isbn=book.isbn if book.isbn is not None else existing.isbn,
+                source=book.source if book.source is not None else existing.source,
+                purchased_date=book.purchased_date if book.purchased_date is not None else existing.purchased_date,
             )
         )
 

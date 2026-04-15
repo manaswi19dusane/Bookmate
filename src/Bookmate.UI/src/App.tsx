@@ -17,6 +17,7 @@ import Community from "./Pages/Community";
 import Marketplace from "./Pages/Marketplace";
 import BookDetail from "./Componants/BookDetail";
 import UserGuide from "./Pages/UserGuide";
+import LendingDashboard from "./Pages/LendingDashboard";
 
 function PrivateRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -55,6 +56,7 @@ function AppRoutes() {
         { path: "/wishlist", element: <Wishlist /> },
         { path: "/library", element: <Library /> },
         { path: "/marketplace", element: <Marketplace /> },
+        { path: "/lending", element: <LendingDashboard /> },
         { path: "/preferences", element: <Preferences /> },
         { path: "/interactions", element: <Interactions /> },
         { path: "/recommendations", element: <Recommendations /> },

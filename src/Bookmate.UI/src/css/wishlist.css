@@ -77,6 +77,18 @@
   object-fit: cover;
 }
 
+.wishlist-card .owner-cover-placeholder {
+  width: 90px;
+  height: 130px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #17324d, #0d6c63);
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
 /* HEART ICON */
 .heart {
   position: absolute;

@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Index
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 
@@ -74,3 +74,30 @@ class MarketplaceORM(SQLModel, table=True):
     __table_args__ = (
         Index("idx_marketplace_available", "is_available", "listed_at"),
     )
+
+
+class BookLendingORM(SQLModel, table=True):
+    __tablename__ = "book_lending"
+
+    id: str = Field(primary_key=True, index=True)
+    book_id: str = Field(index=True)
+    book_name: str
+    owner_id: str = Field(index=True)
+    friend_name: str
+    friend_email: str = Field(index=True)
+    lend_date: datetime = Field(default_factory=datetime.utcnow)
+    due_date: date
+    status: str = Field(default="active", index=True)
+    reminder_stage: Optional[str] = Field(default=None)
+    returned_at: Optional[datetime] = Field(default=None)
+
+
+class WishlistORM(SQLModel, table=True):
+    __tablename__ = "wishlist"
+
+    id: str = Field(primary_key=True, index=True)
+    user_id: str = Field(index=True)
+    book_name: str
+    author: str
+    image: Optional[str] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)

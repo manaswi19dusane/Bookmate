@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import BookCard from "../Componants/BookCard";
-import { booksApi, libraryApi, type Book, type LibraryItem } from "../services/api";
+import { useEffect, useState } from "react";
+import { booksApi, wishlistApi, type WishlistItem } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import "../css/wishlist.css";
 
 export default function Wishlist() {
   const { token } = useAuth();
-  const [items, setItems] = useState<LibraryItem[]>([]);
-  const [books, setBooks] = useState<Book[]>([]);
+  const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -15,12 +14,7 @@ export default function Wishlist() {
     setLoading(true);
     setError("");
     try {
-      const [wishlistItems, allBooks] = await Promise.all([
-        libraryApi.list(token, "wishlist"),
-        booksApi.list(),
-      ]);
-      setItems(wishlistItems);
-      setBooks(allBooks);
+      setItems(await wishlistApi.list(token));
     } catch (err) {
       setError((err as Error).message || "Unable to load your wishlist.");
     } finally {
@@ -32,66 +26,79 @@ export default function Wishlist() {
     void loadWishlist();
   }, [token]);
 
-  const joinedItems = useMemo(
-    () =>
-      items.map((item) => ({
-        item,
-        book: books.find((book) => book.id === item.book_id),
-      })),
-    [items, books]
-  );
-
-  async function moveToReading(item: LibraryItem) {
+  async function addToMyBooks(item: WishlistItem) {
     if (!token) return;
-    await libraryApi.updateStatus(token, item.id, "reading");
-    await loadWishlist();
+    try {
+      await booksApi.create(
+        {
+          title: item.book_name,
+          author: item.author,
+          language: "en",
+          image_url: item.image || null,
+          source: "wishlist",
+        },
+        token
+      );
+      await wishlistApi.remove(token, item.id);
+      setItems((prev) => prev.filter((entry) => entry.id !== item.id));
+    } catch (err) {
+      setError((err as Error).message || "Unable to move this wishlist item to your books.");
+    }
   }
 
-  async function removeItem(item: LibraryItem) {
+  async function removeItem(item: WishlistItem) {
     if (!token) return;
-    await libraryApi.remove(token, item.id);
-    await loadWishlist();
+    try {
+      await wishlistApi.remove(token, item.id);
+      setItems((prev) => prev.filter((entry) => entry.id !== item.id));
+    } catch (err) {
+      setError((err as Error).message || "Unable to remove this wishlist item.");
+    }
   }
 
   return (
-    <section className="page-shell">
-      <div className="section-heading">
-        <p className="page-eyebrow">Library</p>
+    <section className="page-shell wishlist-page">
+      <div className="section-heading wishlist-header">
+        <p className="page-eyebrow">Saved later</p>
         <h1>Wishlist</h1>
-        <p>Your wishlist is now driven by real library items with the `wishlist` status.</p>
+        <p>These are books you want to remember, even before they become part of your owned shelf.</p>
       </div>
 
       {error && <p className="form-error">{error}</p>}
 
       {loading ? (
         <p className="page-status">Loading wishlist...</p>
-      ) : joinedItems.length === 0 ? (
-        <div className="empty-panel">
+      ) : items.length === 0 ? (
+        <div className="empty-panel wishlist-empty">
           <h3>No wishlist items yet</h3>
-          <p>Add books to your library with the wishlist status from the Home or Library page.</p>
+          <p>Add books from the recommendations page to build your future reading list.</p>
         </div>
       ) : (
-        <div className="card-grid">
-          {joinedItems.map(({ item, book }) =>
-            book ? (
-              <BookCard
-                key={item.id}
-                book={book}
-                badge="wishlist"
-                secondaryText={book.language}
-                actions={
-                  <>
-                    <button className="icon-button" onClick={() => moveToReading(item)}>
-                      Move to reading
-                    </button>
-                    <button className="icon-button danger" onClick={() => removeItem(item)}>
-                      Remove
-                    </button>
-                  </>
-                }
-              />
-            ) : null
-          )}
+        <div className="wishlist-list">
+          {items.map((item) => (
+            <article key={item.id} className="wishlist-card">
+              {item.image ? (
+                <img src={item.image} alt={item.book_name} />
+              ) : (
+                <div className="owner-cover-placeholder">{item.book_name.slice(0, 1)}</div>
+              )}
+              <div className="wishlist-info">
+                <h3>{item.book_name}</h3>
+                <p className="author">by {item.author}</p>
+                <p className="language">
+                  Saved on <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                </p>
+                <div className="wishlist-actions">
+                  <button className="btn-move" onClick={() => addToMyBooks(item)}>
+                    Add to My Books
+                  </button>
+                  <button className="btn-remove" onClick={() => removeItem(item)}>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </section>

@@ -8,6 +8,9 @@ class CreateBookDTO(BaseModel):
     language: str
     published_date: Optional[date] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
+    isbn: Optional[str] = None
+    source: Optional[str] = None
     purchased_date: Optional[date] = None
 
 class BookDTO(BaseModel):
@@ -17,14 +20,21 @@ class BookDTO(BaseModel):
     language: str
     published_date: Optional[date] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
+    isbn: Optional[str] = None
+    source: Optional[str] = None
     purchased_date: Optional[date] = None
+    owner_id: Optional[str] = None
 
 class UpdateBookDTO(BaseModel):    
-    title: str
-    author: str
-    language: str
+    title: Optional[str] = None
+    author: Optional[str] = None
+    language: Optional[str] = None
     published_date: Optional[date] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
+    isbn: Optional[str] = None
+    source: Optional[str] = None
     purchased_date: Optional[date] = None
 
 class PatchBookDTO(BaseModel):
@@ -33,4 +43,7 @@ class PatchBookDTO(BaseModel):
     language: Optional[str] = None
     published_date: Optional[date] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
+    isbn: Optional[str] = None
+    source: Optional[str] = None
     purchased_date: Optional[date] = None

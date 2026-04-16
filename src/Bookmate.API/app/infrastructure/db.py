@@ -32,3 +32,18 @@ async def init_db():
                     "ADD COLUMN book_id VARCHAR"
                 )
             )
+        result = await conn.execute(sa.text("PRAGMA table_info(bookorm)"))
+        columns = {row[1] for row in result.fetchall()}
+        if "owner_id" not in columns:
+            await conn.execute(
+                sa.text(
+                    "ALTER TABLE bookorm "
+                    "ADD COLUMN owner_id VARCHAR"
+                )
+            )
+        if "description" not in columns:
+            await conn.execute(sa.text("ALTER TABLE bookorm ADD COLUMN description VARCHAR"))
+        if "isbn" not in columns:
+            await conn.execute(sa.text("ALTER TABLE bookorm ADD COLUMN isbn VARCHAR"))
+        if "source" not in columns:
+            await conn.execute(sa.text("ALTER TABLE bookorm ADD COLUMN source VARCHAR"))

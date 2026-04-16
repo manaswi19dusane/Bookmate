@@ -7,6 +7,7 @@ import {
   interactionsApi,
   libraryApi,
   preferencesApi,
+  wishlistApi,
   type Book,
 } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -32,10 +33,11 @@ export default function Home({ searchQuery = "" }: HomeProps) {
   const deferredQuery = useDeferredValue(searchQuery);
 
   async function loadBooks() {
+    if (!token) return;
     setLoading(true);
     setError("");
     try {
-      setBooks(await booksApi.list());
+      setBooks(await booksApi.listMine(token));
     } catch (err) {
       setError((err as Error).message || "Unable to load books.");
     } finally {
@@ -45,7 +47,7 @@ export default function Home({ searchQuery = "" }: HomeProps) {
 
   useEffect(() => {
     void loadBooks();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (!token) return;
@@ -77,8 +79,9 @@ export default function Home({ searchQuery = "" }: HomeProps) {
   }, [books, deferredQuery, selectedLanguage]);
 
   async function handleDelete(bookId: string) {
+    if (!token) return;
     try {
-      await booksApi.remove(bookId);
+      await booksApi.remove(bookId, token);
       setBooks((prev) => prev.filter((book) => book.id !== bookId));
     } catch (err) {
       setError((err as Error).message || "Unable to delete the book.");
@@ -92,6 +95,19 @@ export default function Home({ searchQuery = "" }: HomeProps) {
       setSummary((prev) => ({ ...prev, libraryCount: prev.libraryCount + 1 }));
     } catch (err) {
       setError((err as Error).message || "Unable to update your library.");
+    }
+  }
+
+  async function addToWishlist(book: Book) {
+    if (!token) return;
+    try {
+      await wishlistApi.create(token, {
+        book_name: book.title,
+        author: book.author,
+        image: book.image_url || null,
+      });
+    } catch (err) {
+      setError((err as Error).message || "Unable to update your wishlist.");
     }
   }
 
@@ -231,7 +247,7 @@ export default function Home({ searchQuery = "" }: HomeProps) {
                 <>
                   <button className="icon-button" onClick={() => setSelectedBook(book)}>Edit</button>
                   <button className="icon-button" onClick={() => addToLibrary(book.id, "reading")}>Read</button>
-                  <button className="icon-button" onClick={() => addToLibrary(book.id, "wishlist")}>Wishlist</button>
+                  <button className="icon-button" onClick={() => addToWishlist(book)}>Wishlist</button>
                   <button className="icon-button danger" onClick={() => handleDelete(book.id)}>Delete</button>
                 </>
               }
@@ -244,9 +260,9 @@ export default function Home({ searchQuery = "" }: HomeProps) {
         <UpdateBook
           book={selectedBook}
           onClose={() => setSelectedBook(null)}
-          onUpdated={() => {
+          onUpdated={(updatedBook) => {
+            setBooks((prev) => prev.map((book) => (book.id === updatedBook.id ? updatedBook : book)));
             setSelectedBook(null);
-            void loadBooks();
           }}
         />
       ) : null}

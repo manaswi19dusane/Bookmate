@@ -55,6 +55,7 @@ export default function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
       <div className="nav-right">
         <span className="nav-user">{user?.email ?? "Guest"}</span>
         <Link to="/library">Library</Link>
+        <Link to="/lending">Lending</Link>
         <Link to="/institution">Institution</Link>
         <Link to="/club">Club</Link>
         <Link to="/community">Community</Link>

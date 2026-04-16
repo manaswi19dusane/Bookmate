@@ -46,3 +46,24 @@ async def get_current_user(
         return await repo.get_by_id(user_id)
     except UserNotFound:
         raise credentials_exception
+
+
+async def get_optional_current_user(
+    token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)
+) -> User | None:
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: str | None = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None
+
+    repo = UserRepository(session)
+    try:
+        return await repo.get_by_id(user_id)
+    except UserNotFound:
+        return None

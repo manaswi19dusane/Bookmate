@@ -16,7 +16,10 @@ class BookMapper:
             language = dto.language,
             published_date=dto.published_date,
             image_url=dto.image_url,
-            purchased_date=dto.purchased_date
+            description=dto.description,
+            isbn=dto.isbn,
+            source=dto.source,
+            purchased_date=dto.purchased_date,
         )
 
     # Domain → DTO
@@ -29,7 +32,11 @@ class BookMapper:
             language = book.language,
             published_date=book.published_date,
             image_url=book.image_url,
-            purchased_date=book.purchased_date
+            description=book.description,
+            isbn=book.isbn,
+            source=book.source,
+            purchased_date=book.purchased_date,
+            owner_id=book.owner_id,
         )
 
     # Domain → ORM
@@ -42,7 +49,11 @@ class BookMapper:
             language = book.language,
             published_date=book.published_date,
             image_url=book.image_url,
-            purchased_date=book.purchased_date
+            description=book.description,
+            isbn=book.isbn,
+            source=book.source,
+            purchased_date=book.purchased_date,
+            owner_id=book.owner_id,
         )
 
     # ORM → Domain
@@ -55,7 +66,11 @@ class BookMapper:
             language = orm.language,
             published_date=orm.published_date,
             image_url=orm.image_url,
-            purchased_date=orm.purchased_date
+            description=orm.description,
+            isbn=orm.isbn,
+            source=orm.source,
+            purchased_date=orm.purchased_date,
+            owner_id=orm.owner_id,
         )
     
     @staticmethod
@@ -67,7 +82,11 @@ class BookMapper:
             language = orm.language,
             published_date=orm.published_date,
             image_url=orm.image_url,
-            purchased_date=orm.purchased_date
+            description=orm.description,
+            isbn=orm.isbn,
+            source=orm.source,
+            purchased_date=orm.purchased_date,
+            owner_id=orm.owner_id,
         )
     @staticmethod
     def from_update_dto(book_id: str, dto: UpdateBookDTO) -> Book:
@@ -78,7 +97,11 @@ class BookMapper:
             language=dto.language,
             published_date=dto.published_date,
             image_url=dto.image_url,
+            description=dto.description,
+            isbn=dto.isbn,
+            source=dto.source,
             purchased_date=dto.purchased_date,
+            owner_id=None,
         )
     @staticmethod
     def merge(existing: Book, dto: PatchBookDTO) -> Book:
@@ -89,5 +112,9 @@ class BookMapper:
             language=dto.language if dto.language is not None else existing.language,
             published_date=dto.published_date if dto.published_date is not None else existing.published_date,
             image_url=dto.image_url if dto.image_url is not None else existing.image_url,
+            description=dto.description if dto.description is not None else existing.description,
+            isbn=dto.isbn if dto.isbn is not None else existing.isbn,
+            source=dto.source if dto.source is not None else existing.source,
             purchased_date=dto.purchased_date if dto.purchased_date is not None else existing.purchased_date,
+            owner_id=existing.owner_id,
         )

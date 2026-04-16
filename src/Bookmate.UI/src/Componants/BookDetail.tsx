@@ -52,7 +52,21 @@ export default function BookDetail() {
               <dt>ID</dt>
               <dd>{book.id}</dd>
             </div>
+            <div>
+              <dt>ISBN</dt>
+              <dd>{book.isbn || "Not provided"}</dd>
+            </div>
+            <div>
+              <dt>Source</dt>
+              <dd>{book.source || "Manual"}</dd>
+            </div>
           </dl>
+          {book.description ? (
+            <div>
+              <h3>Description</h3>
+              <p className="detail-author">{book.description}</p>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

@@ -9,4 +9,8 @@ class BookORM(SQLModel, table=True):
     language: str
     published_date: Optional[date] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
+    isbn: Optional[str] = Field(default=None, index=True)
+    source: Optional[str] = None
     purchased_date: Optional[date] = None
+    owner_id: Optional[str] = Field(default=None, index=True)

@@ -19,7 +19,11 @@ class Book:
     language: str
     published_date: Optional[date] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
+    isbn: Optional[str] = None
+    source: Optional[str] = None
     purchased_date: Optional[date] = None
+    owner_id: Optional[str] = None
 
     def update_title(self, new_title: str):
         if not new_title:

@@ -8,6 +8,9 @@ class CreateBookRequest(BaseModel):
     language: str
     published_date: Optional[date] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
+    isbn: Optional[str] = None
+    source: Optional[str] = None
     purchased_date: Optional[date] = None
 
 class BookResponse(BaseModel):
@@ -18,7 +21,11 @@ class BookResponse(BaseModel):
     language: str
     published_date: Optional[date] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
+    isbn: Optional[str] = None
+    source: Optional[str] = None
     purchased_date: Optional[date] = None
+    owner_id: Optional[str] = None
 
 class UpdateBookRequest(BaseModel):
     title: Optional[str] = None
@@ -26,6 +33,8 @@ class UpdateBookRequest(BaseModel):
     language: Optional[str] = None
     description: Optional[str] = None
     image_url: Optional[str] = None
+    isbn: Optional[str] = None
+    source: Optional[str] = None
     published_date: Optional[date] = None
     purchased_date: Optional[date] = None
 
@@ -220,3 +229,52 @@ class LibraryResponse(BaseModel):
     status: str
     progress: Optional[int] = None
     notes: Optional[str] = None
+
+
+class LendBookRequest(BaseModel):
+    friend_name: str
+    friend_email: str
+    due_date: date
+
+
+class LentBookResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    book_id: str
+    book_name: str
+    owner_id: str
+    friend_name: str
+    friend_email: str
+    lend_date: datetime
+    due_date: date
+    status: str
+    reminder_stage: Optional[str] = None
+    returned_at: Optional[datetime] = None
+
+
+class GoogleBookResponse(BaseModel):
+    external_id: str
+    title: str
+    authors: list[str]
+    thumbnail: Optional[str] = None
+    description: Optional[str] = None
+    published_date: Optional[str] = None
+    language: Optional[str] = None
+    isbn: Optional[str] = None
+    categories: list[str] = []
+
+
+class WishlistCreateRequest(BaseModel):
+    book_name: str
+    author: str
+    image: Optional[str] = None
+
+
+class WishlistResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    user_id: str
+    book_name: str
+    author: str
+    image: Optional[str] = None
+    created_at: datetime

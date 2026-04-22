@@ -10,6 +10,9 @@ from app.interfaces.api_v1.institutions import router as institutions_router
 from app.interfaces.api_v1.corporate_clubs import router as corporate_clubs_router
 from app.interfaces.api_v1.community_groups import router as community_groups_router
 from app.interfaces.api_v1.marketplaces import router as marketplaces_router
+from app.interfaces.api_v1.google_books import router as google_books_router
+from app.interfaces.api_v1.lendings import router as lendings_router
+from app.interfaces.api_v1.wishlist import router as wishlist_router
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -17,17 +20,14 @@ from sqlalchemy.orm import sessionmaker
 app = FastAPI(
     title=settings.APP_NAME,
     swagger_ui_parameters={"defaultModelsExpandDepth": -1},
-    openapi_tags=[
-        {
-            "name": "users",
-            "description": "User authentication, preferences and interactions"
-        },
-    ],
-    security=[
-        {
-            "Bearer": []
-        }
-    ]
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.on_event("startup")
@@ -53,19 +53,14 @@ app.include_router(institutions_router)
 app.include_router(corporate_clubs_router)
 app.include_router(community_groups_router)
 app.include_router(marketplaces_router)
-
-
-# Security scheme for Swagger UI
-from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
-from fastapi.openapi.models import OAuthFlowPassword
-from fastapi.openapi.models import SecurityScheme
+app.include_router(google_books_router)
+app.include_router(lendings_router)
+app.include_router(wishlist_router)
 
 @app.on_event("startup")
 async def configure_openapi():
     if not app.openapi_schema:
         app.openapi_schema = app.openapi()
-    
-    # Add Bearer token security scheme
     app.openapi_schema["components"]["securitySchemes"] = {
         "Bearer": {
             "type": "http",
@@ -74,11 +69,3 @@ async def configure_openapi():
             "description": "Enter your JWT token obtained from /api/users/login"
         }
     }
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)

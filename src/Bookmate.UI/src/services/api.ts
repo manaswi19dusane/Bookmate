@@ -364,3 +364,104 @@ export const marketplaceApi = {
 export function getApiRoot() {
   return API_ROOT;
 }
+
+// ── Google Books ─────────────────────────────────────────────
+export interface GoogleBook {
+  google_id: string;
+  title: string;
+  authors: string[];
+  description: string;
+  thumbnail: string;
+  published_date: string;
+  categories: string[];
+  isbn: string;
+  amazon_url: string;
+}
+
+export const googleBooksApi = {
+  search(q: string, category?: string) {
+    const params = new URLSearchParams({ q });
+    if (category) params.append("category", category);
+    return request<GoogleBook[]>(`/api/google-books/search?${params}`);
+  },
+  getByIsbn(isbn: string) {
+    return request<GoogleBook>(`/api/google-books/isbn/${isbn}`);
+  },
+};
+
+// ── Lendings ─────────────────────────────────────────────────
+export interface Lending {
+  id: string;
+  book_id: string;
+  friend_name: string;
+  friend_email: string;
+  due_date: string;
+  status: string;
+  lent_at: string;
+}
+
+export interface LendingPayload {
+  book_id: string;
+  friend_name: string;
+  friend_email: string;
+  due_date: string;
+}
+
+export const lendingsApi = {
+  list() {
+    return request<Lending[]>("/api/lendings/");
+  },
+  create(payload: LendingPayload) {
+    return request<Lending>("/api/lendings/", {
+      method: "POST",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  markReturned(lendingId: string) {
+    return request<Lending>(`/api/lendings/${lendingId}/return`, {
+      method: "PATCH",
+      headers: buildHeaders(null, false),
+    });
+  },
+  getBookStatus(bookId: string) {
+    return request<{ lent: boolean; lending?: Lending }>(`/api/lendings/book/${bookId}/status`);
+  },
+};
+
+// ── Wishlist (dedicated table) ────────────────────────────────
+export interface WishlistItem {
+  id: string;
+  book_name: string;
+  author: string;
+  image?: string | null;
+  description?: string | null;
+  google_id?: string | null;
+  amazon_url?: string | null;
+  added_at: string;
+}
+
+export interface WishlistPayload {
+  book_name: string;
+  author: string;
+  image?: string | null;
+  description?: string | null;
+  google_id?: string | null;
+  amazon_url?: string | null;
+}
+
+export const wishlistApi = {
+  list() {
+    return request<WishlistItem[]>("/api/wishlist/");
+  },
+  add(payload: WishlistPayload) {
+    return request<WishlistItem>("/api/wishlist/", {
+      method: "POST",
+      headers: buildHeaders(null, true),
+      body: JSON.stringify(payload),
+    });
+  },
+  remove(itemId: string) {
+    return request<void>(`/api/wishlist/${itemId}`, { method: "DELETE" });
+  },
+};

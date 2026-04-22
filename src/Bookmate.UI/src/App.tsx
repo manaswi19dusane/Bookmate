@@ -5,6 +5,7 @@ import Layout from "./Componants/layout";
 import Home from "./Pages/Home";
 import AddBook from "./Pages/AddBook";
 import Wishlist from "./Pages/Wishlist";
+import Lending from "./Pages/Lending";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import Preferences from "./Pages/Preferences";
@@ -31,46 +32,27 @@ function PublicRoute({ children }: { children: ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <PublicRoute>
-            <Register />
-          </PublicRoute>
-        }
-      />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/guide" element={<UserGuide />} />
+
       {[
-        { path: "/", element: <Home /> },
-        { path: "/add", element: <AddBook /> },
-        { path: "/book/:id", element: <BookDetail /> },
-        { path: "/wishlist", element: <Wishlist /> },
-        { path: "/library", element: <Library /> },
-        { path: "/marketplace", element: <Marketplace /> },
-        { path: "/preferences", element: <Preferences /> },
-        { path: "/interactions", element: <Interactions /> },
-        { path: "/recommendations", element: <Recommendations /> },
-        { path: "/institution", element: <Institution /> },
-        { path: "/club", element: <Club /> },
-        { path: "/community", element: <Community /> },
-      ].map((route) => (
-        <Route
-          key={route.path}
-          path={route.path}
-          element={
-            <PrivateRoute>
-              <Layout>{route.element}</Layout>
-            </PrivateRoute>
-          }
-        />
+        { path: "/",               element: <Home /> },
+        { path: "/add",            element: <AddBook /> },
+        { path: "/book/:id",       element: <BookDetail /> },
+        { path: "/wishlist",       element: <Wishlist /> },
+        { path: "/lending",        element: <Lending /> },
+        { path: "/library",        element: <Library /> },
+        { path: "/marketplace",    element: <Marketplace /> },
+        { path: "/preferences",    element: <Preferences /> },
+        { path: "/interactions",   element: <Interactions /> },
+        { path: "/recommendations",element: <Recommendations /> },
+        { path: "/institution",    element: <Institution /> },
+        { path: "/club",           element: <Club /> },
+        { path: "/community",      element: <Community /> },
+      ].map(route => (
+        <Route key={route.path} path={route.path}
+          element={<PrivateRoute><Layout>{route.element}</Layout></PrivateRoute>} />
       ))}
 
       <Route path="*" element={<Navigate to="/" replace />} />

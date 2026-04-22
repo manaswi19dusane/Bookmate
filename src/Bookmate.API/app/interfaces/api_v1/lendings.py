@@ -10,7 +10,7 @@ import uuid
 class LendingORM(SQLModel, table=True):
     __tablename__ = "lendings"
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    book_id: str = Field(foreign_key="bookormt.id")
+    book_id: str = Field(index=True)
     friend_name: str
     friend_email: str
     due_date: date

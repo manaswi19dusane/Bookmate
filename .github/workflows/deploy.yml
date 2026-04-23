@@ -37,7 +37,9 @@ jobs:
         run: npm run build
         working-directory: src/Bookmate.UI
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://localhost:8000' }}
+          # Must be set in GitHub → Settings → Secrets (your Render backend URL).
+          # Intentionally no localhost fallback — a blank URL is caught at build time.
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
 
       - name: Add SPA fallback for GitHub Pages

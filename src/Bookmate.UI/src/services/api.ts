@@ -1,5 +1,4 @@
-const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
-const API_ROOT = (viteEnv?.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+import { API_ROOT } from "../config";
 
 export interface User {
   id: string;

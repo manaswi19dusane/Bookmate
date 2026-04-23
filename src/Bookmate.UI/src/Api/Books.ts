@@ -1,4 +1,6 @@
-const BASE_URL = "http://127.0.0.1:8000/api/books";
+import { API_ROOT } from "../config";
+
+const BASE_URL = `${API_ROOT}/api/books`;
 
 /* ---------- TYPES ---------- */
 
@@ -122,6 +124,5 @@ export interface Updatebookrequest{
   status?: "Owned" | "Wishlist";
   description?: string;
 }
-
 
 

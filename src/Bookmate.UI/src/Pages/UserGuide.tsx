@@ -125,7 +125,7 @@ export default function UserGuide() {
             <article className="stack-card">
               <strong>Frontend must point to the correct API</strong>
               <p>
-                If your backend is hosted elsewhere, set <code>VITE_API_BASE_URL</code> in the UI
+                If your backend is hosted elsewhere, set <code>VITE_API_URL</code> in the UI
                 environment before launching the app.
               </p>
             </article>

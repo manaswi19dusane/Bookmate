@@ -123,6 +123,8 @@ Bookmate/
 
 ## 🚀 Getting Started
 
+For free production deployment with environment-based configuration, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
 ### Prerequisites
 - Python 3.8+
 - Node.js 16+

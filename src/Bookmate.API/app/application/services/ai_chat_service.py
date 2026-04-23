@@ -3,7 +3,7 @@ from __future__ import annotations
 import anyio
 
 from app.config import settings
-from app.infrastructure.external.openai_client import client
+from app.infrastructure.external.openai_client import get_openai_client
 
 SYSTEM_PROMPT = """
 You are Bookmate AI Assistant.
@@ -24,6 +24,12 @@ class AIChatService:
             )
 
         def _request() -> str:
+            client = get_openai_client()
+            if client is None:
+                return (
+                    "AI chat is not configured right now. Set OPENAI_API_KEY to enable "
+                    "live recommendations."
+                )
             response = client.responses.create(
                 model="gpt-4.1-mini",
                 input=[

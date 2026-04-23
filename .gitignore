@@ -109,6 +109,7 @@ Desktop.ini
 # Environment files
 .env
 .env.*
+!.env.example
 
 # Cache
 .cache/

@@ -24,17 +24,25 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"name": settings.APP_NAME, "status": "ok"}
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 @app.on_event("startup")
 async def on_startup():
     await init_db()
-    if settings.ENABLE_SAMPLE_DATA:
-        sync_url = settings.DATABASE_URL.replace("sqlite+aiosqlite:///", "sqlite:///")
+    if settings.ENABLE_SAMPLE_DATA and settings.sqlalchemy_database_url.startswith("sqlite"):
+        sync_url = settings.sqlalchemy_database_url.replace("sqlite+aiosqlite:///", "sqlite:///")
         sync_engine = create_engine(sync_url, future=True)
         session_factory = sessionmaker(bind=sync_engine, autocommit=False, autoflush=False)
         db = session_factory()

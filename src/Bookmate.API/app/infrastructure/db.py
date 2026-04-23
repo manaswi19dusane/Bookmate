@@ -5,7 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.config import settings
 import sqlalchemy as sa
 
-engine: AsyncEngine = create_async_engine(settings.DATABASE_URL, echo=False, future=True)
+engine: AsyncEngine = create_async_engine(settings.sqlalchemy_database_url, echo=False, future=True)
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 async def get_db():
@@ -23,6 +23,8 @@ async def init_db():
             sa.Column('updated_at', sa.DateTime, nullable=False, server_default=sa.text('CURRENT_TIMESTAMP'), onupdate=sa.text('CURRENT_TIMESTAMP'))
         )
         await conn.run_sync(lambda sync_conn: sample_data_table.create(bind=sync_conn, checkfirst=True))
+        if conn.dialect.name != "sqlite":
+            return
         result = await conn.execute(sa.text("PRAGMA table_info(userpreferenceorm)"))
         columns = {row[1] for row in result.fetchall()}
         if "book_id" not in columns:

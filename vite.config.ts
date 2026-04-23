@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/Bookmate/src/Bookmate.UI/',
+  // VITE_BASE_PATH is injected by CI/deploy workflows.
+  // Locally it falls back to '/' so dev server works normally.
+  base: process.env.VITE_BASE_PATH || '/',
   plugins: [react()],
 })

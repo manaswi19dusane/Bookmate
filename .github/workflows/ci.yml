@@ -32,7 +32,10 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://localhost:8000' }}
+          # Set in GitHub → Settings → Secrets to your Render backend URL.
+          # No localhost fallback — a missing secret should be a visible failure.
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_BASE_PATH: /Bookmate/
 
   backend:
     name: Test backend
@@ -54,8 +57,21 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: Run tests
-        run: pytest
+        run: pytest -v
         env:
           DATABASE_URL: sqlite+aiosqlite:///./test_bookmate.db
           JWT_SECRET_KEY: test-secret-key
           BACKEND_CORS_ORIGINS: http://localhost:5173
+
+  deploy-backend:
+    name: Deploy backend to Render
+    needs: backend
+    # Only deploy on direct pushes to main (not PRs)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        # Set RENDER_DEPLOY_HOOK_URL in GitHub → Settings → Secrets.
+        # Get the URL from: Render dashboard → your service → Settings → Deploy Hook.
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"

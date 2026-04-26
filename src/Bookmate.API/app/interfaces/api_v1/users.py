@@ -13,7 +13,7 @@ from app.interfaces.schemas import (
     UserInteractionRequest,
     UserInteractionResponse,
 )
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 from app.infrastructure.repositories.user_repo import UserRepository
 from app.application.services.auth_service import AuthService
 from app.application.services.auth_dependency import get_current_user
@@ -28,14 +28,9 @@ from app.domain.models_user import (
 router = APIRouter(prefix="/api", tags=["users"])
 
 
-async def get_session():
-    async with async_session() as session:
-        yield session
-
-
 @router.post("/users/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(
-    payload: RegisterRequest, session: AsyncSession = Depends(get_session)
+    payload: RegisterRequest, session: AsyncSession = Depends(get_db)
 ):
     repo = UserRepository(session)
     service = AuthService(repo)
@@ -47,7 +42,7 @@ async def register_user(
 
 
 @router.post("/users/login", response_model=AuthResponse)
-async def login_user(payload: LoginRequest, session: AsyncSession = Depends(get_session)):
+async def login_user(payload: LoginRequest, session: AsyncSession = Depends(get_db)):
     repo = UserRepository(session)
     service = AuthService(repo)
 
@@ -63,7 +58,7 @@ async def login_user(payload: LoginRequest, session: AsyncSession = Depends(get_
 @router.get("/users/preferences", response_model=List[UserPreferenceResponse])
 async def list_preferences(
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     repo = UserRepository(session)
     preferences = await repo.list_preferences(current_user.id.value)
@@ -83,7 +78,7 @@ async def list_preferences(
 async def create_preference(
     payload: UserPreferenceRequest,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     try:
         repo = UserRepository(session)
@@ -114,7 +109,7 @@ async def create_preference(
 @router.get("/interactions", response_model=List[UserInteractionResponse])
 async def list_interactions(
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     repo = UserRepository(session)
     interactions = await repo.list_interactions(current_user.id.value)
@@ -133,7 +128,7 @@ async def list_interactions(
 async def create_interaction(
     payload: UserInteractionRequest,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     repo = UserRepository(session)
     interaction = UserInteraction(

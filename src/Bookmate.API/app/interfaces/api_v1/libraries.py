@@ -2,18 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 from app.application.services.library_service import LibraryService
 from app.application.services.auth_dependency import get_current_user
 
 
 router = APIRouter(prefix="/api/library", tags=["library"])
-
-
-async def get_db():
-    async with async_session() as session:
-        yield session
-
 
 @router.get("/")
 async def get_user_library(

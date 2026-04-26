@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, Field, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import Optional, List
 from datetime import date, datetime
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 import uuid
 
 # ── ORM Model ────────────────────────────────────────────────
@@ -36,12 +36,8 @@ class LendingResponse(SQLModel):
 # ── Router ────────────────────────────────────────────────────
 router = APIRouter(prefix="/api/lendings", tags=["lendings"])
 
-async def get_session():
-    async with async_session() as session:
-        yield session
-
 @router.get("/", response_model=List[LendingResponse])
-async def list_lendings(session: AsyncSession = Depends(get_session)):
+async def list_lendings(session: AsyncSession = Depends(get_db)):
     """Get all active lendings."""
     result = await session.execute(
         select(LendingORM).where(LendingORM.status != "Returned").order_by(LendingORM.lent_at.desc())
@@ -58,7 +54,7 @@ async def list_lendings(session: AsyncSession = Depends(get_session)):
     return updated
 
 @router.post("/", response_model=LendingResponse, status_code=201)
-async def lend_book(payload: LendingCreate, session: AsyncSession = Depends(get_session)):
+async def lend_book(payload: LendingCreate, session: AsyncSession = Depends(get_db)):
     """Lend a book to a friend."""
     # Check book exists
     from app.infrastructure.Mappers.book_orm import BookORM
@@ -88,7 +84,7 @@ async def lend_book(payload: LendingCreate, session: AsyncSession = Depends(get_
     return lending
 
 @router.patch("/{lending_id}/return", response_model=LendingResponse)
-async def mark_returned(lending_id: str, session: AsyncSession = Depends(get_session)):
+async def mark_returned(lending_id: str, session: AsyncSession = Depends(get_db)):
     """Mark a lent book as returned."""
     lending = await session.get(LendingORM, lending_id)
     if not lending:
@@ -100,7 +96,7 @@ async def mark_returned(lending_id: str, session: AsyncSession = Depends(get_ses
     return lending
 
 @router.get("/book/{book_id}/status")
-async def get_book_lending_status(book_id: str, session: AsyncSession = Depends(get_session)):
+async def get_book_lending_status(book_id: str, session: AsyncSession = Depends(get_db)):
     """Check if a book is currently lent out."""
     result = await session.execute(
         select(LendingORM).where(

@@ -1,0 +1,20 @@
+services:
+  api:
+    build:
+      context: ./src/Bookmate.API
+    env_file:
+      - ./src/Bookmate.API/.env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ./src/Bookmate.UI
+      args:
+        VITE_API_BASE_URL: http://api:8000
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+    restart: unless-stopped

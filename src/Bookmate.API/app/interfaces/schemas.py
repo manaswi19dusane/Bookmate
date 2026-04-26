@@ -5,7 +5,7 @@ from datetime import date, datetime
 class CreateBookRequest(BaseModel):
     title: str
     author: str
-    language: str
+    language: str = "Unknown"
     published_date: Optional[date] = None
     image_url: Optional[str] = None
     purchased_date: Optional[date] = None

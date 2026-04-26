@@ -7,21 +7,15 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.infrastructure.Mappers.extended_orm import InstitutionORM
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 from app.interfaces.schemas import InstitutionCreate, InstitutionResponse, InstitutionUpdate
 
 router = APIRouter(tags=["institutions"])
 
-
-async def get_session():
-    async with async_session() as session:
-        yield session
-
-
 @router.post("/institutions", response_model=InstitutionResponse, status_code=status.HTTP_201_CREATED)
 async def create_institution(
     payload: InstitutionCreate,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     institution = InstitutionORM(
         id=str(uuid4()),
@@ -43,7 +37,7 @@ async def create_institution(
 async def list_institutions(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     stmt = (
         select(InstitutionORM)
@@ -58,7 +52,7 @@ async def list_institutions(
 @router.get("/institutions/{institution_id}", response_model=InstitutionResponse)
 async def get_institution(
     institution_id: str,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     institution = await session.get(InstitutionORM, institution_id)
     if institution is None:
@@ -70,7 +64,7 @@ async def get_institution(
 async def update_institution(
     institution_id: str,
     payload: InstitutionUpdate,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     institution = await session.get(InstitutionORM, institution_id)
     if institution is None:
@@ -89,7 +83,7 @@ async def update_institution(
 @router.delete("/institutions/{institution_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_institution(
     institution_id: str,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     institution = await session.get(InstitutionORM, institution_id)
     if institution is None:

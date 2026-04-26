@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, Field, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import Optional, List
 from datetime import datetime
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 import uuid
 
 # ── ORM Model ────────────────────────────────────────────────
@@ -40,19 +40,15 @@ class WishlistResponse(SQLModel):
 # ── Router ────────────────────────────────────────────────────
 router = APIRouter(prefix="/api/wishlist", tags=["wishlist"])
 
-async def get_session():
-    async with async_session() as session:
-        yield session
-
 @router.get("/", response_model=List[WishlistResponse])
-async def list_wishlist(session: AsyncSession = Depends(get_session)):
+async def list_wishlist(session: AsyncSession = Depends(get_db)):
     result = await session.execute(
         select(WishlistORM).order_by(WishlistORM.added_at.desc())
     )
     return result.scalars().all()
 
 @router.post("/", response_model=WishlistResponse, status_code=201)
-async def add_to_wishlist(payload: WishlistCreate, session: AsyncSession = Depends(get_session)):
+async def add_to_wishlist(payload: WishlistCreate, session: AsyncSession = Depends(get_db)):
     # Prevent duplicates by book name
     existing = await session.execute(
         select(WishlistORM).where(WishlistORM.book_name == payload.book_name)
@@ -66,7 +62,7 @@ async def add_to_wishlist(payload: WishlistCreate, session: AsyncSession = Depen
     return item
 
 @router.delete("/{item_id}", status_code=204)
-async def remove_from_wishlist(item_id: str, session: AsyncSession = Depends(get_session)):
+async def remove_from_wishlist(item_id: str, session: AsyncSession = Depends(get_db)):
     item = await session.get(WishlistORM, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Wishlist item not found.")

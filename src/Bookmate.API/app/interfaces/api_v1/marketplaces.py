@@ -9,21 +9,15 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.infrastructure.Mappers.book_orm import BookORM
 from app.infrastructure.Mappers.extended_orm import MarketplaceORM
 from app.infrastructure.Mappers.user_orm import UserORM
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 from app.interfaces.schemas import MarketplaceCreate, MarketplaceResponse, MarketplaceUpdate
 
 router = APIRouter(tags=["marketplaces"])
 
-
-async def get_session():
-    async with async_session() as session:
-        yield session
-
-
 @router.post("/marketplaces", response_model=MarketplaceResponse, status_code=status.HTTP_201_CREATED)
 async def create_marketplace(
     payload: MarketplaceCreate,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     seller = await session.get(UserORM, payload.seller_user_id)
     book = await session.get(BookORM, payload.book_id)
@@ -52,7 +46,7 @@ async def create_marketplace(
 async def list_marketplaces(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     stmt = (
         select(MarketplaceORM)
@@ -67,7 +61,7 @@ async def list_marketplaces(
 @router.get("/marketplaces/{marketplace_id}", response_model=MarketplaceResponse)
 async def get_marketplace(
     marketplace_id: str,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     item = await session.get(MarketplaceORM, marketplace_id)
     if item is None:
@@ -79,7 +73,7 @@ async def get_marketplace(
 async def update_marketplace(
     marketplace_id: str,
     payload: MarketplaceUpdate,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     item = await session.get(MarketplaceORM, marketplace_id)
     if item is None:
@@ -101,7 +95,7 @@ async def update_marketplace(
 @router.delete("/marketplaces/{marketplace_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_marketplace(
     marketplace_id: str,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     item = await session.get(MarketplaceORM, marketplace_id)
     if item is None:

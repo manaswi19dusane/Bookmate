@@ -2,18 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 from app.application.services.library_service import LibraryService
 from app.application.services.auth_dependency import get_current_user
 
 
 router = APIRouter(prefix="/api/library", tags=["library"])
-
-
-async def get_db():
-    async with async_session() as session:
-        yield session
-
 
 @router.get("/")
 async def get_user_library(
@@ -63,7 +57,7 @@ async def update_library_status(
     current_user = Depends(get_current_user)
 ):
     service = LibraryService(db)
-    item = await service.update_status(library_id, status)
+    item = await service.update_status(library_id, status, current_user.id.value)
     
     if not item:
         raise HTTPException(status_code=404, detail="Library entry not found")
@@ -81,7 +75,7 @@ async def remove_from_library(
     current_user = Depends(get_current_user)
 ):
     service = LibraryService(db)
-    success = await service.remove_from_library(library_id)
+    success = await service.remove_from_library(library_id, current_user.id.value)
     
     if not success:
         raise HTTPException(status_code=404, detail="Library entry not found")

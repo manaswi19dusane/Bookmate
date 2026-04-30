@@ -14,6 +14,19 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+Important:
+Run that command from `src\Bookmate.API`, not from `src\Bookmate.UI`.
+
+If you are currently inside `src\Bookmate.UI`, use:
+```powershell
+uvicorn app.main:app --reload --app-dir ..\Bookmate.API
+```
+
+You can also use the helper script from anywhere:
+```powershell
+.\src\Bookmate.API\run-dev.ps1
+```
+
 3. Alembic
 - alembic is included. To generate the first migration:
 ```powershell

@@ -11,7 +11,7 @@ from app.infrastructure.repositories.user_repo import UserRepository
 from app.domain.exceptions import UserAlreadyExists, UserNotFound
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256", "bcrypt"], deprecated="auto")
 
 
 class AuthService:
@@ -33,14 +33,15 @@ class AuthService:
         return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGORITHM)
 
     async def register_user(self, payload: RegisterRequest) -> Dict[str, str]:
-        existing_user = await self.user_repo.get_by_email(payload.email)
+        normalized_email = payload.email.strip().lower()
+        existing_user = await self.user_repo.get_by_email(normalized_email)
         if existing_user is not None:
-            raise UserAlreadyExists(payload.email)
+            raise UserAlreadyExists(normalized_email)
 
         hashed_password = self.get_password_hash(payload.password)
         user = User(
             id=UserId.new(),
-            email=payload.email,
+            email=normalized_email,
             password=hashed_password,
             created_at=datetime.utcnow(),
         )
@@ -59,11 +60,12 @@ class AuthService:
         }
 
     async def authenticate_user(self, payload: LoginRequest) -> Dict[str, str]:
-        user = await self.user_repo.get_by_email(payload.email)
+        normalized_email = payload.email.strip().lower()
+        user = await self.user_repo.get_by_email(normalized_email)
         if user is None:
-            raise UserNotFound(payload.email)
+            raise UserNotFound(normalized_email)
         if not self.verify_password(payload.password, user.password):
-            raise UserNotFound(payload.email)
+            raise UserNotFound(normalized_email)
 
         access_token = self.create_access_token({"sub": user.id.value})
 

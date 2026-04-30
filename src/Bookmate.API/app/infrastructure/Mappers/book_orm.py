@@ -4,6 +4,7 @@ from datetime import date
 
 class BookORM(SQLModel, table=True):
     id: str = Field(primary_key=True)
+    owner_user_id: Optional[str] = Field(default=None, index=True, foreign_key="userorm.id")
     title: str
     author: str
     language: str

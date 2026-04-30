@@ -8,11 +8,9 @@ class UpdateBookUseCase:
     def __init__(self, repo: BookRepositoryProtocol):
         self.repo = repo
 
-    async def execute(self, book_id: str, dto: UpdateBookDTO) -> BookDTO:
-       
-        
+    async def execute(self, book_id: str, dto: UpdateBookDTO, owner_user_id: str) -> BookDTO:
         updated = BookMapper.from_update_dto(book_id, dto)
 
-        await self.repo.update(book_id, updated)
+        await self.repo.update(book_id, updated, owner_user_id)
 
         return BookMapper.to_dto(updated)

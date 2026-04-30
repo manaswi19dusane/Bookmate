@@ -104,6 +104,13 @@ button {
   color: var(--muted);
 }
 
+.compact-heading h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.8vw, 1.9rem);
+  line-height: 1.1;
+  color: #123252;
+}
+
 .hero-banner,
 .form-card,
 .list-panel,
@@ -394,6 +401,10 @@ textarea:focus {
   border: 1px solid rgba(182, 69, 60, 0.15);
 }
 
+.page-status {
+  border-color: rgba(13, 108, 99, 0.15);
+}
+
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -459,6 +470,174 @@ textarea:focus {
   margin: 6px 0 0;
 }
 
+.scanner-shell {
+  display: grid;
+  gap: 14px;
+}
+
+.scanner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.scanner-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.scanner-header p,
+.scanner-copy,
+.scanner-preview p,
+.lending-book-copy span,
+.lending-record-grid dt,
+.recommendation-copy p,
+.recommendation-copy small {
+  color: var(--muted);
+}
+
+.scanner-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 24px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.scanner-toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.scanner-reader-frame {
+  padding: 12px;
+  border-radius: 22px;
+  background: rgba(23, 50, 77, 0.04);
+  border: 1px solid rgba(23, 50, 77, 0.08);
+}
+
+.scanner-reader {
+  min-height: 280px;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+.scanner-feedback {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.scanner-feedback-info {
+  background: rgba(13, 108, 99, 0.08);
+  color: var(--accent-strong);
+}
+
+.scanner-feedback-error {
+  background: rgba(182, 69, 60, 0.08);
+  color: var(--danger);
+}
+
+.scanner-preview {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.scanner-preview img {
+  width: 60px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lending-toolbar strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.lending-form {
+  gap: 22px;
+}
+
+.lending-book-grid,
+.lending-record-list {
+  display: grid;
+  gap: 16px;
+}
+
+.lending-book-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.lending-book-card,
+.lending-record-card,
+.recommendation-card {
+  gap: 14px;
+}
+
+.lending-book-cover {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+.lending-book-copy,
+.lending-record-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.lending-book-copy {
+  flex-direction: column;
+}
+
+.lending-record-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.lending-record-grid dd {
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+
+.recommendation-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.recommendation-copy h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.recommendation-copy p,
+.recommendation-copy small {
+  margin: 0;
+}
+
+.recommendation-copy small {
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 @media (max-width: 1080px) {
   .layout {
     grid-template-columns: 1fr;
@@ -478,7 +657,7 @@ textarea:focus {
 
 @media (max-width: 720px) {
   .main-content {
-    padding: 18px;
+    padding: 14px;
   }
 
   .hero-banner,
@@ -500,12 +679,27 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .nav-center {
-    display: none;
+  .scanner-panel,
+  .lending-book-grid,
+  .lending-record-grid {
+    grid-template-columns: 1fr;
   }
 
-  .nav-right {
-    overflow-x: auto;
-    justify-content: flex-end;
+  .scanner-header,
+  .scanner-toolbar,
+  .lending-record-header,
+  .scanner-preview {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hero-actions,
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .hero-actions > *,
+  .form-actions > * {
+    width: 100%;
   }
 }

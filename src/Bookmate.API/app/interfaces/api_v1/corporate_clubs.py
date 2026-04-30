@@ -8,7 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.infrastructure.Mappers.extended_orm import CorporateClubORM
 from app.infrastructure.Mappers.user_orm import UserORM
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 from app.interfaces.schemas import (
     CorporateClubCreate,
     CorporateClubResponse,
@@ -17,16 +17,10 @@ from app.interfaces.schemas import (
 
 router = APIRouter(tags=["corporate-clubs"])
 
-
-async def get_session():
-    async with async_session() as session:
-        yield session
-
-
 @router.post("/corporate-clubs", response_model=CorporateClubResponse, status_code=status.HTTP_201_CREATED)
 async def create_corporate_club(
     payload: CorporateClubCreate,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     admin = await session.get(UserORM, payload.admin_user_id)
     if admin is None:
@@ -52,7 +46,7 @@ async def create_corporate_club(
 async def list_corporate_clubs(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     stmt = (
         select(CorporateClubORM)
@@ -67,7 +61,7 @@ async def list_corporate_clubs(
 @router.get("/corporate-clubs/{club_id}", response_model=CorporateClubResponse)
 async def get_corporate_club(
     club_id: str,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     club = await session.get(CorporateClubORM, club_id)
     if club is None:
@@ -79,7 +73,7 @@ async def get_corporate_club(
 async def update_corporate_club(
     club_id: str,
     payload: CorporateClubUpdate,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     club = await session.get(CorporateClubORM, club_id)
     if club is None:
@@ -98,7 +92,7 @@ async def update_corporate_club(
 @router.delete("/corporate-clubs/{club_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_corporate_club(
     club_id: str,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     club = await session.get(CorporateClubORM, club_id)
     if club is None:

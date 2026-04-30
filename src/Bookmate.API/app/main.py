@@ -1,49 +1,107 @@
+from __future__ import annotations
+
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from app.config import settings
-from app.infrastructure.db import init_db
-from app.infrastructure.seed.seed_data import run_seed, is_sample_data_loaded
-from app.interfaces.api_v1.books import router as books_router
-from app.interfaces.api_v1.ai import router as ai_router
-from app.interfaces.api_v1.users import router as users_router
-from app.interfaces.api_v1.libraries import router as libraries_router
-from app.interfaces.api_v1.institutions import router as institutions_router
-from app.interfaces.api_v1.corporate_clubs import router as corporate_clubs_router
-from app.interfaces.api_v1.community_groups import router as community_groups_router
-from app.interfaces.api_v1.marketplaces import router as marketplaces_router
-from app.interfaces.api_v1.google_books import router as google_books_router
-from app.interfaces.api_v1.lendings import router as lendings_router
-from app.interfaces.api_v1.wishlist import router as wishlist_router
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-app = FastAPI(
-    title=settings.APP_NAME,
-    swagger_ui_parameters={"defaultModelsExpandDepth": -1},
-)
+from app.application.services.lending_notification_service import process_due_reminders
+from app.config import settings
+from app.infrastructure.db import database_healthcheck, dispose_engine, init_db
+from app.infrastructure.db import get_session_factory
+from app.infrastructure.seed.seed_data import is_sample_data_loaded, run_seed
+from app.interfaces.api_v1.ai import router as ai_router
+from app.interfaces.api_v1.books import router as books_router
+from app.interfaces.api_v1.community_groups import router as community_groups_router
+from app.interfaces.api_v1.corporate_clubs import router as corporate_clubs_router
+from app.interfaces.api_v1.google_books import router as google_books_router
+from app.interfaces.api_v1.health import router as health_router
+from app.interfaces.api_v1.institutions import router as institutions_router
+from app.interfaces.api_v1.lendings import router as lendings_router
+from app.interfaces.api_v1.libraries import router as libraries_router
+from app.interfaces.api_v1.marketplaces import router as marketplaces_router
+from app.interfaces.api_v1.users import router as users_router
+from app.interfaces.api_v1.wishlist import router as wishlist_router
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+logger = logging.getLogger(__name__)
 
-@app.get("/")
-async def root():
-    return {"name": settings.APP_NAME, "status": "ok"}
 
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
-
-@app.on_event("startup")
-async def on_startup():
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
     await init_db()
-    if settings.ENABLE_SAMPLE_DATA and settings.sqlalchemy_database_url.startswith("sqlite"):
-        sync_url = settings.sqlalchemy_database_url.replace("sqlite+aiosqlite:///", "sqlite:///")
-        sync_engine = create_engine(sync_url, future=True)
+    await _seed_sample_data_if_needed_async()
+    reminder_task = asyncio.create_task(_run_lending_reminder_loop())
+    yield
+    reminder_task.cancel()
+    try:
+        await reminder_task
+    except asyncio.CancelledError:
+        pass
+    await dispose_engine()
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title=settings.APP_NAME,
+        swagger_ui_parameters={"defaultModelsExpandDepth": -1},
+        lifespan=lifespan,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    if settings.trusted_hosts:
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_hosts)
+
+    @app.get("/")
+    async def root():
+        return {
+            "name": settings.APP_NAME,
+            "environment": settings.ENVIRONMENT,
+            "status": "ok",
+        }
+
+    @app.get("/healthz")
+    async def liveness():
+        return {"status": "ok"}
+
+    @app.get("/readyz")
+    async def readiness():
+        db_ok = await database_healthcheck()
+        return {
+            "status": "ready" if db_ok else "degraded",
+            "database": "ok" if db_ok else "unavailable",
+            "environment": settings.ENVIRONMENT,
+        }
+
+    app.include_router(health_router)
+    app.include_router(users_router)
+    app.include_router(books_router, prefix="/api")
+    app.include_router(ai_router)
+    app.include_router(libraries_router)
+    app.include_router(institutions_router)
+    app.include_router(corporate_clubs_router)
+    app.include_router(community_groups_router)
+    app.include_router(marketplaces_router)
+    app.include_router(google_books_router)
+    app.include_router(lendings_router)
+    app.include_router(wishlist_router)
+
+    return app  # ← FIXED: was missing before
+
+
+async def _seed_sample_data_if_needed_async() -> None:
+    def _sync_seed():
+        sync_engine = create_engine(settings.sync_database_url, future=True)
         session_factory = sessionmaker(bind=sync_engine, autocommit=False, autoflush=False)
         db = session_factory()
         try:
@@ -53,27 +111,21 @@ async def on_startup():
             db.close()
             sync_engine.dispose()
 
-app.include_router(users_router)
-app.include_router(books_router, prefix="/api")
-app.include_router(ai_router)
-app.include_router(libraries_router)
-app.include_router(institutions_router)
-app.include_router(corporate_clubs_router)
-app.include_router(community_groups_router)
-app.include_router(marketplaces_router)
-app.include_router(google_books_router)
-app.include_router(lendings_router)
-app.include_router(wishlist_router)
+    await asyncio.to_thread(_sync_seed)  # ← FIXED: inline sync function, no undefined reference
 
-@app.on_event("startup")
-async def configure_openapi():
-    if not app.openapi_schema:
-        app.openapi_schema = app.openapi()
-    app.openapi_schema["components"]["securitySchemes"] = {
-        "Bearer": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": "Enter your JWT token obtained from /api/users/login"
-        }
-    }
+
+async def _run_lending_reminder_loop() -> None:
+    from app.infrastructure.Mappers.book_orm import BookORM
+    from app.interfaces.api_v1.lendings import LendingORM
+
+    await asyncio.sleep(max(settings.REMINDER_POLL_INTERVAL_SECONDS, 300))
+    while True:
+        try:
+            async with get_session_factory()() as session:
+                await process_due_reminders(session, LendingORM, BookORM)
+        except Exception:
+            logger.exception("Lending reminder loop failed")
+        await asyncio.sleep(max(settings.REMINDER_POLL_INTERVAL_SECONDS, 300))
+
+
+app = create_app()

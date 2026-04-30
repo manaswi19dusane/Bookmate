@@ -8,7 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.infrastructure.Mappers.extended_orm import CommunityGroupORM
 from app.infrastructure.Mappers.user_orm import UserORM
-from app.infrastructure.db import async_session
+from app.infrastructure.db import get_db
 from app.interfaces.schemas import (
     CommunityGroupCreate,
     CommunityGroupResponse,
@@ -17,16 +17,10 @@ from app.interfaces.schemas import (
 
 router = APIRouter(tags=["community-groups"])
 
-
-async def get_session():
-    async with async_session() as session:
-        yield session
-
-
 @router.post("/community-groups", response_model=CommunityGroupResponse, status_code=status.HTTP_201_CREATED)
 async def create_community_group(
     payload: CommunityGroupCreate,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     creator = await session.get(UserORM, payload.creator_user_id)
     if creator is None:
@@ -51,7 +45,7 @@ async def create_community_group(
 async def list_community_groups(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     stmt = (
         select(CommunityGroupORM)
@@ -66,7 +60,7 @@ async def list_community_groups(
 @router.get("/community-groups/{group_id}", response_model=CommunityGroupResponse)
 async def get_community_group(
     group_id: str,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     group = await session.get(CommunityGroupORM, group_id)
     if group is None:
@@ -78,7 +72,7 @@ async def get_community_group(
 async def update_community_group(
     group_id: str,
     payload: CommunityGroupUpdate,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     group = await session.get(CommunityGroupORM, group_id)
     if group is None:
@@ -97,7 +91,7 @@ async def update_community_group(
 @router.delete("/community-groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_community_group(
     group_id: str,
-    session: AsyncSession = Depends(get_session),
+    session: AsyncSession = Depends(get_db),
 ):
     group = await session.get(CommunityGroupORM, group_id)
     if group is None:

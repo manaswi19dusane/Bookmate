@@ -57,7 +57,7 @@ async def update_library_status(
     current_user = Depends(get_current_user)
 ):
     service = LibraryService(db)
-    item = await service.update_status(library_id, status)
+    item = await service.update_status(library_id, status, current_user.id.value)
     
     if not item:
         raise HTTPException(status_code=404, detail="Library entry not found")
@@ -75,7 +75,7 @@ async def remove_from_library(
     current_user = Depends(get_current_user)
 ):
     service = LibraryService(db)
-    success = await service.remove_from_library(library_id)
+    success = await service.remove_from_library(library_id, current_user.id.value)
     
     if not success:
         raise HTTPException(status_code=404, detail="Library entry not found")

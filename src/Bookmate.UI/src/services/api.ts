@@ -1,5 +1,7 @@
 import { API_ROOT } from "../config";
 
+const TOKEN_KEY = "bookmate.token";
+
 export interface User {
   id: string;
   email: string;
@@ -152,13 +154,22 @@ export interface MarketplacePayload {
   description?: string | null;
 }
 
+function getStoredToken() {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
 function buildHeaders(token?: string | null, includeJson = true): HeadersInit {
   const headers: Record<string, string> = {};
   if (includeJson) {
     headers["Content-Type"] = "application/json";
   }
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  const resolvedToken = token ?? getStoredToken();
+  if (resolvedToken) {
+    headers.Authorization = `Bearer ${resolvedToken}`;
   }
   return headers;
 }
@@ -378,8 +389,9 @@ export interface GoogleBook {
 }
 
 export const googleBooksApi = {
-  search(q: string, category?: string) {
-    const params = new URLSearchParams({ q });
+  search(q?: string, category?: string) {
+    const params = new URLSearchParams();
+    if (q) params.append("q", q);
     if (category) params.append("category", category);
     return request<GoogleBook[]>(`/api/google-books/search?${params}`);
   },

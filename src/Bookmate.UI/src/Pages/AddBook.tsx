@@ -1,38 +1,93 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { booksApi, googleBooksApi } from "../services/api";
+
+type CameraOption = {
+  id: string;
+  label: string;
+};
+
+type Html5QrcodeInstance = {
+  start: (cameraId: string, config: object, onSuccess: (decodedText: string) => void, onError: () => void) => Promise<void>;
+  stop: () => Promise<void>;
+  clear: () => Promise<void>;
+  isScanning?: boolean;
+};
+
+declare global {
+  interface Window {
+    Html5Qrcode?: {
+      new (elementId: string): Html5QrcodeInstance;
+      getCameras: () => Promise<Array<{ id: string; label: string }>>;
+    };
+  }
+}
+
+function normalizePublishedDate(value?: string | null) {
+  if (!value) {
+    return "";
+  }
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+  return "";
+}
+
+function getPreferredCamera(cameras: CameraOption[]) {
+  return (
+    cameras.find((camera) => /back|rear|environment/i.test(camera.label)) ||
+    cameras[0] ||
+    null
+  );
+}
 
 export default function AddBook() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    title: "", author: "", language: "English",
-    published_date: "", purchased_date: "", image_url: "",
+    title: "",
+    author: "",
+    language: "English",
+    published_date: "",
+    purchased_date: "",
+    image_url: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [scannerActive, setScannerActive] = useState(false);
   const [scanFeedback, setScanFeedback] = useState("");
-  const scannerRef = useRef<HTMLDivElement>(null);
-  const scannerInstanceRef = useRef<unknown>(null);
+  const [scannerLoading, setScannerLoading] = useState(false);
+  const [cameras, setCameras] = useState<CameraOption[]>([]);
+  const [activeCameraId, setActiveCameraId] = useState("");
+  const scannerContainerRef = useRef<HTMLDivElement>(null);
+  const scannerInstanceRef = useRef<Html5QrcodeInstance | null>(null);
 
   function setField(field: string, value: string) {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setError("");
-    if (!form.title.trim() || !form.author.trim() || !form.language.trim()) {
+
+    const title = form.title.trim();
+    const author = form.author.trim();
+    const language = form.language.trim();
+    if (!title || !author || !language) {
       setError("Title, author, and language are required.");
       return;
     }
+
     setSaving(true);
     try {
       await booksApi.create({
-        ...form,
+        title,
+        author,
+        language,
         published_date: form.published_date || null,
         purchased_date: form.purchased_date || null,
-        image_url: form.image_url || null,
+        image_url: form.image_url.trim() || null,
       });
       navigate("/");
     } catch (err) {
@@ -43,141 +98,252 @@ export default function AddBook() {
   }
 
   async function onIsbnScanned(isbn: string) {
-    setScanFeedback(`ISBN detected: ${isbn} — Looking up...`);
-    stopScanner();
+    setScanFeedback(`ISBN detected: ${isbn}. Looking up book details...`);
+    await stopScanner();
     try {
       const book = await googleBooksApi.getByIsbn(isbn);
       setForm({
         title: book.title,
         author: book.authors[0] || "",
         language: "English",
-        published_date: book.published_date?.slice(0, 10) || "",
+        published_date: normalizePublishedDate(book.published_date),
         purchased_date: "",
         image_url: book.thumbnail || "",
       });
-      setScanFeedback(`✅ Book found: "${book.title}" — Edit details below and save.`);
+      setScanFeedback(`Book found: "${book.title}". Review the details and save.`);
     } catch {
-      setScanFeedback("❌ No book found for this ISBN. Enter details manually.");
+      setScanFeedback("No book was found for this ISBN. Enter details manually.");
     }
   }
 
-  function stopScanner() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const inst = scannerInstanceRef.current as any;
-    if (inst) {
-      try { inst.clear(); } catch { /* ignore */ }
-      scannerInstanceRef.current = null;
+  async function loadScannerScript() {
+    if (window.Html5Qrcode) {
+      return;
     }
+
+    await new Promise<void>((resolve, reject) => {
+      const existing = document.getElementById("html5-qrcode-script");
+      if (existing) {
+        existing.addEventListener("load", () => resolve(), { once: true });
+        existing.addEventListener("error", () => reject(new Error("Failed to load scanner.")), { once: true });
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.id = "html5-qrcode-script";
+      script.src = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load scanner."));
+      document.body.appendChild(script);
+    });
+  }
+
+  async function stopScanner() {
+    const scanner = scannerInstanceRef.current;
+    if (!scanner) {
+      setScannerActive(false);
+      return;
+    }
+
+    try {
+      await scanner.stop();
+    } catch {
+      // ignore stop errors when scanner is already inactive
+    }
+
+    try {
+      await scanner.clear();
+    } catch {
+      // ignore clear errors
+    }
+
+    scannerInstanceRef.current = null;
     setScannerActive(false);
+    setScannerLoading(false);
+  }
+
+  async function startScanner(cameraId: string) {
+    await loadScannerScript();
+    if (!window.Html5Qrcode || !scannerContainerRef.current) {
+      throw new Error("Scanner is unavailable on this device.");
+    }
+
+    if (scannerInstanceRef.current) {
+      await stopScanner();
+    }
+
+    const scanner = new window.Html5Qrcode("barcode-reader");
+    scannerInstanceRef.current = scanner;
+    await scanner.start(
+      cameraId,
+      { fps: 10, qrbox: { width: 240, height: 140 }, aspectRatio: 1.6 },
+      (decodedText) => {
+        void onIsbnScanned(decodedText);
+      },
+      () => {
+        // keep scanning quietly
+      }
+    );
+    setActiveCameraId(cameraId);
+    setScannerActive(true);
+    setScannerLoading(false);
+  }
+
+  async function openScanner() {
+    setScanFeedback("");
+    setError("");
+    setScannerLoading(true);
+
+    try {
+      await loadScannerScript();
+      if (!window.Html5Qrcode) {
+        throw new Error("Scanner is unavailable on this device.");
+      }
+
+      const foundCameras = (await window.Html5Qrcode.getCameras()).map((camera) => ({
+        id: camera.id,
+        label: camera.label || `Camera ${camera.id}`,
+      }));
+      if (foundCameras.length === 0) {
+        throw new Error("No camera was found on this device.");
+      }
+
+      setCameras(foundCameras);
+      const preferred = getPreferredCamera(foundCameras);
+      if (!preferred) {
+        throw new Error("No usable camera was found.");
+      }
+
+      await startScanner(preferred.id);
+    } catch (err) {
+      setScannerLoading(false);
+      setScanFeedback((err as Error).message || "Unable to start the scanner.");
+    }
+  }
+
+  async function flipCamera() {
+    if (cameras.length < 2) {
+      return;
+    }
+
+    const currentIndex = cameras.findIndex((camera) => camera.id === activeCameraId);
+    const nextCamera = cameras[(currentIndex + 1) % cameras.length];
+    setScannerLoading(true);
+    setScanFeedback("Switching camera...");
+    try {
+      await startScanner(nextCamera.id);
+      setScanFeedback(`Using ${nextCamera.label}.`);
+    } catch (err) {
+      setScannerLoading(false);
+      setScanFeedback((err as Error).message || "Unable to switch camera.");
+    }
   }
 
   useEffect(() => {
-    if (!scannerActive || !scannerRef.current) return;
-
-    const scriptId = "html5-qrcode-script";
-    function startScanner() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Html5QrcodeScanner = (window as any).Html5QrcodeScanner;
-      if (!Html5QrcodeScanner) return;
-      const scanner = new Html5QrcodeScanner(
-        "barcode-reader",
-        { fps: 10, qrbox: { width: 250, height: 150 } },
-        false
-      );
-      scanner.render(
-        (decodedText: string) => { void onIsbnScanned(decodedText); },
-        () => { /* scan error, ignore */ }
-      );
-      scannerInstanceRef.current = scanner;
-    }
-
-    if (document.getElementById(scriptId)) {
-      startScanner();
-    } else {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.src = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
-      script.onload = startScanner;
-      document.body.appendChild(script);
-    }
-
-    return () => { stopScanner(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scannerActive]);
+    return () => {
+      void stopScanner();
+    };
+  }, []);
 
   return (
     <section className="page-shell form-page">
       <div className="section-heading">
         <p className="page-eyebrow">Books</p>
         <h1>Add a New Book</h1>
-        <p>Scan a barcode or enter details manually.</p>
+        <p>Add books faster with barcode scanning, camera switching, and a mobile-friendly form.</p>
       </div>
 
-      {/* Barcode Scanner */}
-      <div style={{ marginBottom: "24px" }}>
-        <button
-          type="button"
-          onClick={() => { setScanFeedback(""); setScannerActive(prev => !prev); }}
-          style={{ padding: "10px 20px", borderRadius: "8px", background: "#0ea5e9",
-            color: "#fff", border: "none", fontWeight: 600, fontSize: "14px", cursor: "pointer" }}>
-          {scannerActive ? "✕ Close Scanner" : "📷 Scan Barcode / ISBN"}
-        </button>
-
-        {scannerActive && (
-          <div style={{ marginTop: "16px", background: "#fff", borderRadius: "12px",
-            padding: "16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
-            <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "12px" }}>
-              Point your camera at the book's ISBN barcode. Fields will auto-fill.
-            </p>
-            <div id="barcode-reader" ref={scannerRef} />
+      <section className="scanner-panel">
+        <div className="scanner-header">
+          <div>
+            <h2>ISBN Scanner</h2>
+            <p>Use the back or front camera on your phone and switch between them any time.</p>
           </div>
-        )}
+          <div className="scanner-toolbar">
+            {!scannerActive ? (
+              <button type="button" className="primary-button" onClick={() => void openScanner()} disabled={scannerLoading}>
+                {scannerLoading ? "Opening scanner..." : "Open scanner"}
+              </button>
+            ) : (
+              <>
+                <button type="button" className="secondary-button" onClick={() => void flipCamera()} disabled={scannerLoading || cameras.length < 2}>
+                  Flip camera
+                </button>
+                <button type="button" className="secondary-button" onClick={() => void stopScanner()} disabled={scannerLoading}>
+                  Close scanner
+                </button>
+              </>
+            )}
+          </div>
+        </div>
 
-        {scanFeedback && (
-          <p style={{ marginTop: "10px", fontSize: "14px", fontWeight: 600,
-            color: scanFeedback.startsWith("✅") ? "#16a34a" : scanFeedback.startsWith("❌") ? "#dc2626" : "#4f46e5" }}>
+        {cameras.length > 1 ? (
+          <label>
+            Camera
+            <select
+              value={activeCameraId}
+              onChange={(event) => void startScanner(event.target.value)}
+              disabled={!scannerActive || scannerLoading}
+            >
+              {cameras.map((camera) => (
+                <option key={camera.id} value={camera.id}>
+                  {camera.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        <div className="scanner-reader-frame">
+          <div id="barcode-reader" ref={scannerContainerRef} className="scanner-reader" />
+        </div>
+
+        {scanFeedback ? (
+          <p className={`scanner-feedback ${scanFeedback.toLowerCase().includes("unable") || scanFeedback.toLowerCase().includes("no book") ? "scanner-feedback-error" : "scanner-feedback-info"}`}>
             {scanFeedback}
           </p>
-        )}
-      </div>
+        ) : null}
+      </section>
 
-      {/* Book Form */}
       <form className="form-card" onSubmit={handleSubmit}>
         <div className="form-grid">
           <label>
             Title *
-            <input value={form.title} onChange={e => setField("title", e.target.value)} required />
+            <input value={form.title} onChange={(event) => setField("title", event.target.value)} required />
           </label>
           <label>
             Author *
-            <input value={form.author} onChange={e => setField("author", e.target.value)} required />
+            <input value={form.author} onChange={(event) => setField("author", event.target.value)} required />
           </label>
           <label>
             Language *
-            <input value={form.language} onChange={e => setField("language", e.target.value)} required />
+            <input value={form.language} onChange={(event) => setField("language", event.target.value)} required />
           </label>
           <label>
             Published Date
-            <input type="date" value={form.published_date} onChange={e => setField("published_date", e.target.value)} />
+            <input type="date" value={form.published_date} onChange={(event) => setField("published_date", event.target.value)} />
           </label>
           <label>
             Purchased Date
-            <input type="date" value={form.purchased_date} onChange={e => setField("purchased_date", e.target.value)} />
+            <input type="date" value={form.purchased_date} onChange={(event) => setField("purchased_date", event.target.value)} />
           </label>
           <label className="full-width">
             Cover Image URL
-            <input value={form.image_url} onChange={e => setField("image_url", e.target.value)} placeholder="https://..." />
+            <input
+              value={form.image_url}
+              onChange={(event) => setField("image_url", event.target.value)}
+              placeholder="https://..."
+            />
           </label>
-          {form.image_url && (
-            <div className="full-width" style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <img src={form.image_url} alt="preview"
-                style={{ width: "60px", height: "80px", objectFit: "cover", borderRadius: "6px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }} />
-              <p style={{ fontSize: "13px", color: "#6b7280" }}>Cover preview</p>
+          {form.image_url ? (
+            <div className="full-width scanner-preview">
+              <img src={form.image_url} alt="Book cover preview" />
+              <p>Cover preview</p>
             </div>
-          )}
+          ) : null}
         </div>
 
-        {error && <p className="form-error">{error}</p>}
+        {error ? <p className="form-error">{error}</p> : null}
 
         <div className="form-actions">
           <button type="button" className="secondary-button" onClick={() => navigate(-1)}>

@@ -1,6 +1,7 @@
-import { useState } from "react";
-import ChatMessage from "../ChatBot/ChatMessage";
+import { useEffect, useRef, useState } from "react";
+
 import { sendChatMessage } from "../../Api/aiChat";
+import ChatMessage from "../ChatBot/ChatMessage";
 
 interface Props {
   onClose: () => void;
@@ -14,51 +15,48 @@ interface ChatMessageType {
 }
 
 const SUGGESTIONS = [
-  "Recommend a book",
-  "Find a book",
-  "Reading tips",
+  "Recommend 3 motivational books",
+  "How do I lend a book?",
+  "How do I scan an ISBN barcode?",
 ];
 
 export default function ChatbotWindow({ onClose }: Props) {
   const [messages, setMessages] = useState<ChatMessageType[]>([
     {
       sender: "bot",
-      text: "Hello! 👋 I’m Bookmate AI. How can I assist you today?",
+      text: "Hello. I am Bookmate AI. Ask for book recommendations, app guidance, lending help, or scanning support.",
     },
   ]);
-
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const messagesRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    messagesRef.current?.scrollTo({
+      top: messagesRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, loading]);
 
   async function sendMessage(text?: string) {
-    const userMessage = text ?? input;
-    if (!userMessage.trim() || loading) return;
+    const userMessage = (text ?? input).trim();
+    if (!userMessage || loading) {
+      return;
+    }
 
-    // 1️⃣ Show user message immediately
-    setMessages((prev) => [
-      ...prev,
-      { sender: "user", text: userMessage },
-    ]);
-
+    setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
     setInput("");
     setLoading(true);
 
     try {
-      // 2️⃣ Call backend AI API
       const reply = await sendChatMessage(userMessage);
-
-      // 3️⃣ Show AI response
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: reply },
-      ]);
-    } catch (error) {
-      // 4️⃣ Graceful fallback
+      setMessages((prev) => [...prev, { sender: "bot", text: reply }]);
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
           sender: "bot",
-          text: "⚠️ Sorry, I couldn’t respond right now. Please try again.",
+          text: "Sorry, I could not respond right now. Please try again in a moment.",
         },
       ]);
     } finally {
@@ -68,50 +66,49 @@ export default function ChatbotWindow({ onClose }: Props) {
 
   return (
     <div className="chatbot-window">
-      {/* HEADER */}
       <div className="chatbot-header">
         <div className="bot-info">
-          <span className="bot-avatar">🤖</span>
+          <span className="bot-avatar">AI</span>
           <span className="bot-name">Bookmate AI Assistant</span>
         </div>
-        <button onClick={onClose}>✖</button>
+        <button type="button" onClick={onClose} aria-label="Close AI assistant">
+          Close
+        </button>
       </div>
 
-      {/* MESSAGES */}
-      <div className="chatbot-messages">
-        {messages.map((msg, i) => (
-          <ChatMessage key={i} sender={msg.sender} text={msg.text} />
+      <div className="chatbot-messages" ref={messagesRef}>
+        {messages.map((message, index) => (
+          <ChatMessage key={`${message.sender}-${index}`} sender={message.sender} text={message.text} />
         ))}
-
-        {loading && (
-          <div className="chat-message bot">Typing…</div>
-        )}
+        {loading ? <div className="chat-message bot">Thinking...</div> : null}
       </div>
 
-      {/* SUGGESTIONS */}
-      {!loading && (
+      {!loading ? (
         <div className="chatbot-suggestions">
-          <span className="suggestion-title">Suggestions:</span>
+          <span className="suggestion-title">Quick prompts</span>
           <div className="suggestion-buttons">
-            {SUGGESTIONS.map((s) => (
-              <button key={s} onClick={() => sendMessage(s)}>
-                {s}
+            {SUGGESTIONS.map((suggestion) => (
+              <button key={suggestion} type="button" onClick={() => sendMessage(suggestion)}>
+                {suggestion}
               </button>
             ))}
           </div>
         </div>
-      )}
+      ) : null}
 
-      {/* INPUT */}
       <div className="chatbot-input">
         <input
-          placeholder="Type your message..."
+          placeholder="Ask for a recommendation or feature walkthrough..."
           value={input}
           disabled={loading}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onChange={(event) => setInput(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              void sendMessage();
+            }
+          }}
         />
-        <button onClick={() => sendMessage()} disabled={loading}>
+        <button type="button" onClick={() => sendMessage()} disabled={loading}>
           Send
         </button>
       </div>

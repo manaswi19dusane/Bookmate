@@ -128,8 +128,27 @@ def _apply_schema_guards(sync_conn) -> None:
 
     inspector = sa.inspect(sync_conn)
     if not inspector.has_table("userpreferenceorm"):
-        return
+        pass
+    else:
+        existing_columns = {column["name"] for column in inspector.get_columns("userpreferenceorm")}
+        if "book_id" not in existing_columns:
+            sync_conn.execute(sa.text("ALTER TABLE userpreferenceorm ADD COLUMN book_id VARCHAR"))
 
-    existing_columns = {column["name"] for column in inspector.get_columns("userpreferenceorm")}
-    if "book_id" not in existing_columns:
-        sync_conn.execute(sa.text("ALTER TABLE userpreferenceorm ADD COLUMN book_id VARCHAR"))
+    if inspector.has_table("lendings"):
+        lending_columns = {column["name"] for column in inspector.get_columns("lendings")}
+        if "owner_user_id" not in lending_columns:
+            sync_conn.execute(sa.text("ALTER TABLE lendings ADD COLUMN owner_user_id VARCHAR"))
+        if "reminder_stage" not in lending_columns:
+            sync_conn.execute(sa.text("ALTER TABLE lendings ADD COLUMN reminder_stage VARCHAR"))
+        if "returned_at" not in lending_columns:
+            sync_conn.execute(sa.text("ALTER TABLE lendings ADD COLUMN returned_at DATETIME"))
+
+    if inspector.has_table("bookorm"):
+        book_columns = {column["name"] for column in inspector.get_columns("bookorm")}
+        if "owner_user_id" not in book_columns:
+            sync_conn.execute(sa.text("ALTER TABLE bookorm ADD COLUMN owner_user_id VARCHAR"))
+
+    if inspector.has_table("wishlist"):
+        wishlist_columns = {column["name"] for column in inspector.get_columns("wishlist")}
+        if "owner_user_id" not in wishlist_columns:
+            sync_conn.execute(sa.text("ALTER TABLE wishlist ADD COLUMN owner_user_id VARCHAR"))

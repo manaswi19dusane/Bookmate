@@ -18,7 +18,7 @@ interface HomeProps {
 
 export default function Home({ searchQuery = "" }: HomeProps) {
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -165,6 +165,19 @@ export default function Home({ searchQuery = "" }: HomeProps) {
             <article className="stack-card stat-card">
               <strong>{summary.interactionCount}</strong>
               <span>Tracked interactions</span>
+            </article>
+          </div>
+        </div>
+
+        <div className="list-panel">
+          <h2>Your profile</h2>
+          <div className="stack-list">
+            <article className="stack-card">
+              <strong>{user?.email ?? "Signed in user"}</strong>
+              <span>Private workspace owner</span>
+              <small className="book-meta">
+                Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "today"}
+              </small>
             </article>
           </div>
         </div>

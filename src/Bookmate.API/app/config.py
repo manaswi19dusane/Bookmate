@@ -30,6 +30,15 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("BACKEND_CORS_ORIGINS", "CORS_ORIGINS"),
     )
     SQLITE_TIMEOUT_SECONDS: float = 30.0
+    TRUSTED_HOSTS: str = "localhost,127.0.0.1,testserver"
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    EMAIL_FROM: str = ""
+    SMTP_START_TLS: bool = True
+    SMTP_TIMEOUT_SECONDS: float = 15.0
+    REMINDER_POLL_INTERVAL_SECONDS: int = 3600
 
     @property
     def cors_origins(self) -> list[str]:
@@ -41,6 +50,14 @@ class Settings(BaseSettings):
         if self.FRONTEND_URL:
             origins.add(self.FRONTEND_URL.strip().rstrip("/"))
         return sorted(origins)
+
+    @property
+    def trusted_hosts(self) -> list[str]:
+        return [
+            host.strip()
+            for host in self.TRUSTED_HOSTS.split(",")
+            if host.strip()
+        ]
 
     @property
     def sqlalchemy_database_url(self) -> str:
@@ -72,6 +89,19 @@ class Settings(BaseSettings):
         if not candidate.is_absolute():
             candidate = (BASE_DIR / candidate).resolve()
         return candidate
+
+    @property
+    def smtp_enabled(self) -> bool:
+        return bool(
+            self.SMTP_HOST.strip()
+            and self.SMTP_USER.strip()
+            and self.SMTP_PASSWORD.strip()
+            and self.outbound_email_from
+        )
+
+    @property
+    def outbound_email_from(self) -> str:
+        return self.EMAIL_FROM.strip() or self.SMTP_USER.strip()
 
 
 settings = Settings()

@@ -34,9 +34,10 @@ class BookMapper:
 
     # Domain → ORM
     @staticmethod
-    def to_orm(book: Book) -> BookORM:
+    def to_orm(book: Book, owner_user_id: str) -> BookORM:
         return BookORM(
             id=book.id.value,
+            owner_user_id=owner_user_id,
             title=book.title,
             author=book.author,
             language = book.language,

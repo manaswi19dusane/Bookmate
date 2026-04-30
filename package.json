@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "api": "powershell -ExecutionPolicy Bypass -File .\\src\\Bookmate.API\\run-dev.ps1"
+  },
   "dependencies": {
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

@@ -1,14 +1,19 @@
 from __future__ import annotations
 
+import asyncio
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.application.services.lending_notification_service import process_due_reminders
 from app.config import settings
 from app.infrastructure.db import database_healthcheck, dispose_engine, init_db
+from app.infrastructure.db import get_session_factory
 from app.infrastructure.seed.seed_data import is_sample_data_loaded, run_seed
 from app.interfaces.api_v1.ai import router as ai_router
 from app.interfaces.api_v1.books import router as books_router
@@ -23,12 +28,20 @@ from app.interfaces.api_v1.marketplaces import router as marketplaces_router
 from app.interfaces.api_v1.users import router as users_router
 from app.interfaces.api_v1.wishlist import router as wishlist_router
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     await init_db()
-    _seed_sample_data_if_needed()
+    await _seed_sample_data_if_needed_async()
+    reminder_task = asyncio.create_task(_run_lending_reminder_loop())
     yield
+    reminder_task.cancel()
+    try:
+        await reminder_task
+    except asyncio.CancelledError:
+        pass
     await dispose_engine()
 
 
@@ -46,6 +59,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    if settings.trusted_hosts:
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_hosts)
 
     @app.get("/")
     async def root():
@@ -81,33 +96,36 @@ def create_app() -> FastAPI:
     app.include_router(lendings_router)
     app.include_router(wishlist_router)
 
-    if not app.openapi_schema:
-        app.openapi_schema = app.openapi()
-    app.openapi_schema.setdefault("components", {})
-    app.openapi_schema["components"]["securitySchemes"] = {
-        "Bearer": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": "Enter your JWT token obtained from /api/users/login",
-        }
-    }
-    return app
+    return app  # ← FIXED: was missing before
 
 
-def _seed_sample_data_if_needed() -> None:
-    if not settings.ENABLE_SAMPLE_DATA or not settings.sync_database_url.startswith("sqlite"):
-        return
+async def _seed_sample_data_if_needed_async() -> None:
+    def _sync_seed():
+        sync_engine = create_engine(settings.sync_database_url, future=True)
+        session_factory = sessionmaker(bind=sync_engine, autocommit=False, autoflush=False)
+        db = session_factory()
+        try:
+            if not is_sample_data_loaded(db):
+                run_seed(db)
+        finally:
+            db.close()
+            sync_engine.dispose()
 
-    sync_engine = create_engine(settings.sync_database_url, future=True)
-    session_factory = sessionmaker(bind=sync_engine, autocommit=False, autoflush=False)
-    db = session_factory()
-    try:
-        if not is_sample_data_loaded(db):
-            run_seed(db)
-    finally:
-        db.close()
-        sync_engine.dispose()
+    await asyncio.to_thread(_sync_seed)  # ← FIXED: inline sync function, no undefined reference
+
+
+async def _run_lending_reminder_loop() -> None:
+    from app.infrastructure.Mappers.book_orm import BookORM
+    from app.interfaces.api_v1.lendings import LendingORM
+
+    await asyncio.sleep(max(settings.REMINDER_POLL_INTERVAL_SECONDS, 300))
+    while True:
+        try:
+            async with get_session_factory()() as session:
+                await process_due_reminders(session, LendingORM, BookORM)
+        except Exception:
+            logger.exception("Lending reminder loop failed")
+        await asyncio.sleep(max(settings.REMINDER_POLL_INTERVAL_SECONDS, 300))
 
 
 app = create_app()

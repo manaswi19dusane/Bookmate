@@ -9,18 +9,23 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  function normalizeEmail(value: string) {
+    return value.trim().toLowerCase();
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
-    if (!form.email.trim() || !form.password.trim()) {
+    const email = normalizeEmail(form.email);
+    if (!email || !form.password.trim()) {
       setError("Email and password are required.");
       return;
     }
 
     setLoading(true);
     try {
-      await login(form);
+      await login({ email, password: form.password });
       navigate("/");
     } catch (err) {
       setError((err as Error).message || "Unable to log in.");
@@ -41,7 +46,7 @@ export default function Login() {
           <input
             type="email"
             value={form.email}
-            onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
+            onChange={(event) => setForm((prev) => ({ ...prev, email: normalizeEmail(event.target.value) }))}
             placeholder="you@example.com"
             autoComplete="email"
             required

@@ -4,6 +4,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select, delete
 
 from app.domain.extended_models import Library, EntityId
+from app.infrastructure.Mappers.book_orm import BookORM
 from app.infrastructure.Mappers.extended_orm import LibraryORM
 
 
@@ -15,6 +16,10 @@ class LibraryService:
         existing = await self.get_by_user_and_book(user_id, book_id)
         if existing:
             raise ValueError("Book already in library")
+
+        book = await self.db.get(BookORM, book_id)
+        if not book or book.owner_user_id != user_id:
+            raise ValueError("Book is not available in your private catalog")
         
         library = Library(
             id=EntityId.new(),
@@ -82,8 +87,10 @@ class LibraryService:
             
         return items
 
-    async def update_status(self, library_id: str, status: str) -> Optional[Library]:
-        orm_obj = await self.db.get(LibraryORM, library_id)
+    async def update_status(self, library_id: str, status: str, user_id: str) -> Optional[Library]:
+        query = select(LibraryORM).where(LibraryORM.id == library_id, LibraryORM.user_id == user_id)
+        result = await self.db.exec(query)
+        orm_obj = result.first()
         if not orm_obj:
             return None
             
@@ -101,8 +108,8 @@ class LibraryService:
             notes=orm_obj.notes
         )
 
-    async def remove_from_library(self, library_id: str) -> bool:
-        query = delete(LibraryORM).where(LibraryORM.id == library_id)
+    async def remove_from_library(self, library_id: str, user_id: str) -> bool:
+        query = delete(LibraryORM).where(LibraryORM.id == library_id, LibraryORM.user_id == user_id)
         result = await self.db.exec(query)
         await self.db.commit()
         

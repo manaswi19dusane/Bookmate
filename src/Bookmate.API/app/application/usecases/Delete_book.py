@@ -5,9 +5,6 @@ class DeleteBookUseCase:
     def __init__(self, repo: BookRepositoryProtocol):
         self.repo = repo
 
-    async def execute(self, book_id: str) -> None:
-        # force existence check
-        await self.repo.get_by_id(book_id)
-
-        # delete
-        await self.repo.remove(book_id)
+    async def execute(self, book_id: str, owner_user_id: str) -> None:
+        await self.repo.get_by_id(book_id, owner_user_id)
+        await self.repo.remove(book_id, owner_user_id)
